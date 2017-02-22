@@ -13,29 +13,57 @@
 using namespace std;
 int num_R=0;
 map<int, vector<int>> edges; //Adjacency list
-//map<pair<int,int>, pair<int,int>> data; 
-
-int isRorQ(int edge[]){
-    if(edge[2]*2 <= edge[3]){
-        num_R+=1;
-        return 1;
-    }
-    return 0;
-}
+map<pair<int, int>, vector<int>> data; //Edge data
 
 /* Print map of edges */
 void printEdgesMap(){
-    for (unsigned i = 0; i < edges.size(); ++i) {
-        cout<<"Nodo "<< i << ":";
-        for(unsigned j = 0; j < edges[i].size(); ++j){
-            cout<<" "<< edges[i][j];
+    for (auto const &f : edges) {
+        cout<<"Nodo "<< f.first << ":";
+        for(auto const &s : f.second){
+            cout<<" "<< s;
         }
         cout<<endl;
     }
 }
 
-/* Connected component */
-void getComponents(){
+/* Print edges data */
+void printData(){
+    for (auto const &d : data) {
+        cout<<"("<< d.first.first <<" , "<<d.first.second << ") :";
+        for(auto const &val : d.second){
+            cout<<"\t"<< val;
+        }
+        cout<<endl;
+    }
+}
+
+void setDataAndEdge(ifstream &infile, int loop, bool isP){
+    string line,token;
+    int i,j,c,b;
+    for(int x=0;x<loop;x++) {
+        getline(infile, line);
+        istringstream ss(line);
+
+        getline(ss,token,' ');
+        i = stoi(token)-1; 
+        getline(ss,token,' ');
+        j = stoi(token)-1; 
+        getline(ss,token,' ');
+        c = stoi(token); 
+        getline(ss,token,' ');
+        b = stoi(token); 
+
+        data[make_pair(i,j)].push_back(c);
+        data[make_pair(i,j)].push_back(b);
+        //is P, R or Q
+        if(isP) data[make_pair(i,j)].push_back(-1);
+        else if(c*2 <= b) data[make_pair(i,j)].push_back(1);
+        else data[make_pair(i,j)].push_back(0);
+
+        //matriz - tipo de arco
+        edges[i].push_back(j);
+        edges[j].push_back(i);
+    }
 }
 
 /*
@@ -62,50 +90,16 @@ int main(int argc, char const *argv[]) {
     getline(infile, line); 
     rqdEdges = stoi(line.substr(line.find("edges")+5));
     cout << "rqdEdges = "<<rqdEdges<<endl;
-
-    int rqd_edges[rqdEdges][4]; //node1 node2 cost benefit isR
-                                //isR = 1 significa que al pasar dos veces por ese lado, el beneficion es >= 0
-    for(int i=0;i<rqdEdges;i++) {
-        getline(infile, line);
-        istringstream ss(line);
-        for(int j =0;j<4;j++){
-            getline(ss,token,' ');
-            rqd_edges[i][j] = stoi(token); 
-            cout <<rqd_edges[i][j] <<"\t";
-        }
-        rqd_edges[i][5] = isRorQ(rqd_edges[i]);
-        cout<< rqd_edges[i][5]<<endl;
-
-
-        //matriz - tipo de arco
-        edges[rqd_edges[i][0]].push_back(rqd_edges[i][1]);
-        edges[rqd_edges[i][1]].push_back(rqd_edges[i][0]);
-
-    }
+    setDataAndEdge(infile, rqdEdges, false);
 
     //get number of non required edges
     getline(infile, line); 
     nonRqdEdges = stoi(line.substr(line.find("edges")+5));
     cout << "nonrqdEdges = "<<nonRqdEdges<<endl;
-
-    int non_rqd_edges[nonRqdEdges][4];
-    for(int i=0;i<nonRqdEdges;i++) {
-        getline(infile, line);
-        istringstream ss(line);
-        for(int j =0;j<4;j++){
-            getline(ss,token,' ');
-            non_rqd_edges[i][j] = stoi(token); 
-            cout <<non_rqd_edges[i][j] <<"\t";
-        }
-        cout<<endl;
-
-        //matriz - tipo de arco
-        edges[non_rqd_edges[i][0]].push_back(non_rqd_edges[i][1]);
-        edges[non_rqd_edges[i][1]].push_back(non_rqd_edges[i][0]);
-
-    }
+    setDataAndEdge(infile, nonRqdEdges, true);
 
     printEdgesMap();
+    printData();
 
     return 0;
 }

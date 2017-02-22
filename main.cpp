@@ -3,20 +3,18 @@
     Isaac Gonzalez  11-10396
     Andrea Centeno  10-10138
 */
-
-#include <stdio.h>
+#include <map>
+#include <vector> 
 #include <iostream>
 #include <string>
 #include <fstream>
-#include <vector>
 #include <sstream>
-#include <math.h>
 
 using namespace std;
 int num_R=0;
-/*
-argv[1] -> intancia
-*/
+map<int, vector<int>> edges; //Adjacency list
+//map<pair<int,int>, pair<int,int>> data; 
+
 int isRorQ(int edge[]){
     if(edge[2]*2 <= edge[3]){
         num_R+=1;
@@ -25,6 +23,24 @@ int isRorQ(int edge[]){
     return 0;
 }
 
+/* Print map of edges */
+void printEdgesMap(){
+    for (unsigned i = 0; i < edges.size(); ++i) {
+        cout<<"Nodo "<< i << ":";
+        for(unsigned j = 0; j < edges[i].size(); ++j){
+            cout<<" "<< edges[i][j];
+        }
+        cout<<endl;
+    }
+}
+
+/* Connected component */
+void getComponents(){
+}
+
+/*
+argv[1] -> intance
+*/
 int main(int argc, char const *argv[]) {
     int vertices,rqdEdges, nonRqdEdges;
 
@@ -47,7 +63,7 @@ int main(int argc, char const *argv[]) {
     rqdEdges = stoi(line.substr(line.find("edges")+5));
     cout << "rqdEdges = "<<rqdEdges<<endl;
 
-    int rqd_edges[rqdEdges][5]; //node1 node2 cost benefit isR
+    int rqd_edges[rqdEdges][4]; //node1 node2 cost benefit isR
                                 //isR = 1 significa que al pasar dos veces por ese lado, el beneficion es >= 0
     for(int i=0;i<rqdEdges;i++) {
         getline(infile, line);
@@ -59,6 +75,12 @@ int main(int argc, char const *argv[]) {
         }
         rqd_edges[i][5] = isRorQ(rqd_edges[i]);
         cout<< rqd_edges[i][5]<<endl;
+
+
+        //matriz - tipo de arco
+        edges[rqd_edges[i][0]].push_back(rqd_edges[i][1]);
+        edges[rqd_edges[i][1]].push_back(rqd_edges[i][0]);
+
     }
 
     //get number of non required edges
@@ -76,7 +98,14 @@ int main(int argc, char const *argv[]) {
             cout <<non_rqd_edges[i][j] <<"\t";
         }
         cout<<endl;
+
+        //matriz - tipo de arco
+        edges[non_rqd_edges[i][0]].push_back(non_rqd_edges[i][1]);
+        edges[non_rqd_edges[i][1]].push_back(non_rqd_edges[i][0]);
+
     }
+
+    printEdgesMap();
 
     return 0;
 }

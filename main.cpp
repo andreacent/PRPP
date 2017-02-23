@@ -10,6 +10,7 @@
 #include <map>
 #include <vector> 
 #include <set>
+#include <queue>
 
 using namespace std;
 map<int, vector<int>> edges; //Adjacency list
@@ -30,7 +31,7 @@ void printEdgesMap(map<int, vector<int>> e){
 }
 
 /* Print edges data */
-void printData(){
+void printData(map<pair<int, int>, vector<int>> data){
     for (auto const &d : data) {
         cout<<"("<< d.first.first <<" , "<<d.first.second << ") :";
         for(auto const &val : d.second){
@@ -50,6 +51,7 @@ void printComponents(vector<set<int>> &components){
         cout<<endl;
     }
 }
+
 ////////////////////////////////////////////
 
 /*Return true if the vertice is in any set of the vector c*/
@@ -73,15 +75,48 @@ void getComponents(int v,int i,map<int, vector<int>> e,vector<set<int>> &compone
         }
     }
 }
-/*dijkstra algorithm to find all connected component of set*/
+/*dijkstra algorithm to find all connected components of set*/
 void dijkstraComponents(map<int, vector<int>> e,vector<set<int>> &components){
     int i =0;
     for (auto const &s : e) {
-        if(!isInSet(components,s.first)){
+        if(!isInSet(components,s.first)){ 
             getComponents(s.first,i,e,components);
             i++;
         }
     }
+}
+
+class CompareBenefit {
+public:
+    bool operator()(pair<int, int> &p1, pair<int, int> &p2) {
+        int b1 = data[p1][1] - data[p1][0];
+        int b2 = data[p2][1] - data[p2][0];
+        if (b1 < b2) return true;
+        return false;
+    }
+};
+
+void kruskal(set<int> components,map<int, vector<int>> edges){
+    vector<set<int>> comp;
+    priority_queue<pair<int, int>,vector<pair<int, int>>,CompareBenefit> edge_cost;
+
+    for(auto const &c : components){
+        set<int> comp = {c};
+        comp.insert(c);
+        for(auto const &v : edges[c]){
+            pair<int,int> p = {c,v};
+            if(data.count(p)){
+                edge_cost.push(p);
+            }
+        }
+    }
+    /*
+    cout<<"Camino: ";
+    for (auto const &e : edge_cost) {
+        cout<<"("<<e.first<<","<<e.second<<")";
+    }
+    cout<<endl;
+    */
 }
 
 void setDataAndEdge(ifstream &infile, int loop, bool isP){
@@ -164,6 +199,9 @@ int main(int argc, char const *argv[]) {
     cout << "\nComponentes conexas R --"<<endl;
     dijkstraComponents(edgesR,componentsR);
     printComponents(componentsR);
+
+
+    kruskal(componentsR[4],edgesR);
 
     return 0;
 }

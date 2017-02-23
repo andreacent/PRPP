@@ -104,19 +104,22 @@ void kruskal(set<int> components,map<int, vector<int>> edges){
         set<int> comp = {c};
         comp.insert(c);
         for(auto const &v : edges[c]){
-            pair<int,int> p = {c,v};
-            if(data.count(p)){
-                edge_cost.push(p);
-            }
+            cout << "(" << c<<","<<v<<") "<<endl;
+            pair<int,int> p1 = {c,v};
+            if(data.count(p1)) edge_cost.push(p1);
         }
     }
-    /*
-    cout<<"Camino: ";
-    for (auto const &e : edge_cost) {
-        cout<<"("<<e.first<<","<<e.second<<")";
+    
+    cout<<"Cola prioridad: ";
+    while(!edge_cost.empty()){
+        pair<int, int> p = edge_cost.top();
+        edge_cost.pop();
+        int b = data[p][1] - data[p][0];
+        cout << " (" << p.first<<","<<p.second<<") c="<<b;
     }
-    cout<<endl;
-    */
+    cout<< endl;
+
+    
 }
 
 void setDataAndEdge(ifstream &infile, int loop, bool isP){

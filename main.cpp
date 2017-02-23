@@ -62,7 +62,7 @@ bool isInSet(vector<set<int>> c,int vertice){
     return false;
 }
 
-/*Function used by dijkstraComponents*/
+/*Function used by dfsComponents*/
 void getComponents(int v,int i,map<int, vector<int>> e,vector<set<int>> &components){
     for(auto const &s : e[v]){
         if((int)components.size() <= i){
@@ -75,8 +75,8 @@ void getComponents(int v,int i,map<int, vector<int>> e,vector<set<int>> &compone
         }
     }
 }
-/*dijkstra algorithm to find all connected components of set*/
-void dijkstraComponents(map<int, vector<int>> e,vector<set<int>> &components){
+/*dfs algorithm to find all connected components of set*/
+void dfsComponents(map<int, vector<int>> e,vector<set<int>> &components){
     int i =0;
     for (auto const &s : e) {
         if(!isInSet(components,s.first)){ 
@@ -104,22 +104,21 @@ void kruskal(set<int> components,map<int, vector<int>> edges){
         set<int> comp = {c};
         comp.insert(c);
         for(auto const &v : edges[c]){
-            cout << "(" << c<<","<<v<<") "<<endl;
+            //cout << "(" << c<<","<<v<<") "<<endl;
             pair<int,int> p1 = {c,v};
             if(data.count(p1)) edge_cost.push(p1);
         }
     }
     
-    cout<<"Cola prioridad: ";
+    int sum =0;
     while(!edge_cost.empty()){
         pair<int, int> p = edge_cost.top();
         edge_cost.pop();
         int b = data[p][1] - data[p][0];
         cout << " (" << p.first<<","<<p.second<<") c="<<b;
+        sum+=b;
     }
-    cout<< endl;
-
-    
+    cout<<" SUM="<<sum<< endl;    
 }
 
 void setDataAndEdge(ifstream &infile, int loop, bool isP){
@@ -197,14 +196,17 @@ int main(int argc, char const *argv[]) {
     vector<set<int>> componentsRQ;
     vector<set<int>> componentsR;
     cout << "\nComponentes conexas (R unido Q) --"<<endl;
-    dijkstraComponents(edgesRQ,componentsRQ);
+    dfsComponents(edgesRQ,componentsRQ);
     printComponents(componentsRQ);
     cout << "\nComponentes conexas R --"<<endl;
-    dijkstraComponents(edgesR,componentsR);
+    dfsComponents(edgesR,componentsR);
     printComponents(componentsR);
 
-
-    kruskal(componentsR[4],edgesR);
+    //prioridad de las componentes conexas del conj R
+    cout<<"\nCOLAS DE PRIORIDAD: \n";
+    for(auto const &comp : componentsR){
+        kruskal(comp,edgesR);
+    }
 
     return 0;
 }

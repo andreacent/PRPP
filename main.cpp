@@ -3,21 +3,24 @@
     Isaac Gonzalez  11-10396
     Andrea Centeno  10-10138
 */
-#include <map>
-#include <vector> 
 #include <iostream>
-#include <string>
 #include <fstream>
 #include <sstream>
+#include <string>
+#include <map>
+#include <vector> 
+#include <set>
 
 using namespace std;
-int num_R=0;
 map<int, vector<int>> edges; //Adjacency list
+map<int, vector<int>> edgesRQ; //Adjacency list RQ set
+map<int, vector<int>> edgesR; //Adjacency list R set
 map<pair<int, int>, vector<int>> data; //Edge data
 
+//////////////PRINT FUNCTIONS//////////////
 /* Print map of edges */
-void printEdgesMap(){
-    for (auto const &f : edges) {
+void printEdgesMap(map<int, vector<int>> e){
+    for (auto const &f : e) {
         cout<<"Nodo "<< f.first << ":";
         for(auto const &s : f.second){
             cout<<" "<< s;
@@ -34,6 +37,50 @@ void printData(){
             cout<<"\t"<< val;
         }
         cout<<endl;
+    }
+}
+
+/* Print components vector */
+void printComponents(vector<set<int>> &components){
+    for (unsigned i=0;i<components.size();i++) {
+        cout<<"Componente "<< i <<": ";
+        for(auto const &ver : components[i]){
+            cout<<ver<<",";
+        }
+        cout<<endl;
+    }
+}
+////////////////////////////////////////////
+
+/*Return true if the vertice is in any set of the vector c*/
+bool isInSet(vector<set<int>> c,int vertice){
+    for (auto const &s : c) {
+        if(s.count(vertice)) return true;
+    }
+    return false;
+}
+
+/*Function used by dijkstraComponents*/
+void getComponents(int v,int i,map<int, vector<int>> e,vector<set<int>> &components){
+    for(auto const &s : e[v]){
+        if((int)components.size() <= i){
+            set<int> comp = {s};
+            components.push_back(comp);
+            getComponents(s,i,e,components);
+        }else if(!components[i].count(s)){
+            components[i].insert(s);
+            getComponents(s,i,e,components);
+        }
+    }
+}
+/*dijkstra algorithm to find all connected component of set*/
+void dijkstraComponents(map<int, vector<int>> e,vector<set<int>> &components){
+    int i =0;
+    for (auto const &s : e) {
+        if(!isInSet(components,s.first)){
+            getComponents(s.first,i,e,components);
+            i++;
+        }
     }
 }
 
@@ -56,9 +103,17 @@ void setDataAndEdge(ifstream &infile, int loop, bool isP){
         data[make_pair(i,j)].push_back(c);
         data[make_pair(i,j)].push_back(b);
         //is P, R or Q
-        if(isP) data[make_pair(i,j)].push_back(-1);
-        else if(c*2 <= b) data[make_pair(i,j)].push_back(1);
-        else data[make_pair(i,j)].push_back(0);
+        if(!isP){
+            edgesRQ[i].push_back(j);
+            edgesRQ[j].push_back(i);
+            if(c*2 <= b){
+                data[make_pair(i,j)].push_back(1); //R
+                edgesR[i].push_back(j);
+                edgesR[j].push_back(i);
+            }
+            else data[make_pair(i,j)].push_back(0); //Q
+        }
+        else data[make_pair(i,j)].push_back(-1); //P
 
         //matriz - tipo de arco
         edges[i].push_back(j);
@@ -98,8 +153,17 @@ int main(int argc, char const *argv[]) {
     cout << "nonrqdEdges = "<<nonRqdEdges<<endl;
     setDataAndEdge(infile, nonRqdEdges, true);
 
-    printEdgesMap();
-    printData();
+    //printEdgesMap(edges);
+    //printData();
+
+    vector<set<int>> componentsRQ;
+    vector<set<int>> componentsR;
+    cout << "\nComponentes conexas (R unido Q) --"<<endl;
+    dijkstraComponents(edgesRQ,componentsRQ);
+    printComponents(componentsRQ);
+    cout << "\nComponentes conexas R --"<<endl;
+    dijkstraComponents(edgesR,componentsR);
+    printComponents(componentsR);
 
     return 0;
 }

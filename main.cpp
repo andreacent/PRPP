@@ -88,6 +88,8 @@ void dfsComponents(map<int, vector<int>> e,vector<set<int>> &components){
     for (auto const &s : e) {
         if(!isInSet(components,s.first)){ 
             getComponents(s.first,i,e,components);
+            //if(!components[i].count(0)) components.erase(components.begin()+i);
+            //else i++;
             i++;
         }
     }

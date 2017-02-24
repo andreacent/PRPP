@@ -133,7 +133,7 @@ void dijkstra(set<int> components,map<int, vector<int>> edges, int s){
         if(sum > sum+edc.cost) break;
         edge_cost.pop();
         //cout<<"edc "<<edc.edge.first<<","<<edc.edge.second<<" cost="<<edc.cost<<endl;
-       // if( path_pair.count(ec.edge) || path_pair.count(make_pair(ec.edge.second,ec.edge.first)))
+        if( path_pair.count(edc.edge) || path_pair.count(make_pair(edc.edge.second,edc.edge.first))) continue;
         path.push_back(edc.edge.second);
         path_pair.insert(edc.edge);
         sum+=edc.cost;

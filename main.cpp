@@ -158,6 +158,19 @@ void dijkstra(set<int> components,map<int, vector<int>> edges, int s){
     cout<<" SUM="<<sum<< endl;    
 }
 
+vector<int> findD(set<int> components,map<int, vector<int>> edges){
+    vector<int> d;
+    for(auto const &c : components){
+        if((int)edges[c].size() == 1){
+            if (data.count(make_pair(c,edges[c][0])) && data[make_pair(c,edges[c][0])][2] ==1)
+                d.push_back(c);
+            if (data.count(make_pair(edges[c][0],c)) && data[make_pair(edges[c][0],c)][2] ==1)
+                d.push_back(c);
+        }
+    }
+    return d;
+}
+
 void setDataAndEdge(ifstream &infile, int loop, bool isP){
     string line,token;
     int i,j,c,b;

@@ -52,6 +52,13 @@ void printComponents(vector<set<int>> &components){
     }
 }
 
+/* Print vector of int */
+void printVector(vector<int> vec){
+    for (auto const &v : vec) {
+        cout<<v<<" ";
+    }
+}
+
 ////////////////////////////////////////////
 
 /*Return true if the vertice is in any set of the vector c*/
@@ -126,6 +133,7 @@ void dijkstra(set<int> components,map<int, vector<int>> edges, int s){
         if(sum > sum+edc.cost) break;
         edge_cost.pop();
         //cout<<"edc "<<edc.edge.first<<","<<edc.edge.second<<" cost="<<edc.cost<<endl;
+       // if( path_pair.count(ec.edge) || path_pair.count(make_pair(ec.edge.second,ec.edge.first)))
         path.push_back(edc.edge.second);
         path_pair.insert(edc.edge);
         sum+=edc.cost;
@@ -136,7 +144,7 @@ void dijkstra(set<int> components,map<int, vector<int>> edges, int s){
             ec2.edge = {v,edc.edge.second};
             if( data.count(ec.edge) && !path_pair.count(ec.edge)){//data[i,j] existe, no se ha pasado por [i,j]
                 if(path_pair.count(ec2.edge)) //si se paso por [j,i]
-                    ec.cost = -data[ec.edge][0];
+                    continue;//ec.cost = -data[ec.edge][0];
                 else 
                     ec.cost = data[ec.edge][1] - data[ec.edge][0];
                 edge_cost.push(ec);
@@ -144,22 +152,23 @@ void dijkstra(set<int> components,map<int, vector<int>> edges, int s){
 
             if(data.count(ec2.edge) && !path_pair.count(ec2.edge) ){//data[j,i] existe, no se ha pasado por [j,i]
                 if(path_pair.count(ec.edge)) //si se paso por [i,j]
-                    edge_cost.push({ec.edge,- data[ec2.edge][0]});
+                    continue;//edge_cost.push({ec.edge,- data[ec2.edge][0]});
                 else 
                     edge_cost.push({ec.edge,data[ec2.edge][1] - data[ec2.edge][0]});
             }
         }
     } 
 
-    cout<<"PATH ";
-    for(auto const &v : path){
-        cout << v<<" ";
-    }
-    cout<<" SUM="<<sum<< endl;    
+    cout<<"\nPATH ";
+    printVector(path);
+    cout<<" SUM="<<sum<< endl; 
+    for(auto const &p : path_pair){
+        cout<<"("<<p.first<<","<<p.second<<") ";
+    }   
+    cout<<endl; 
 }
 
-vector<int> findD(set<int> components,map<int, vector<int>> edges){
-    vector<int> d;
+void findLeaves(set<int> components,map<int, vector<int>> edges,vector<int> &d){
     for(auto const &c : components){
         if((int)edges[c].size() == 1){
             if (data.count(make_pair(c,edges[c][0])) && data[make_pair(c,edges[c][0])][2] ==1)
@@ -168,7 +177,6 @@ vector<int> findD(set<int> components,map<int, vector<int>> edges){
                 d.push_back(c);
         }
     }
-    return d;
 }
 
 void setDataAndEdge(ifstream &infile, int loop, bool isP){
@@ -242,23 +250,52 @@ int main(int argc, char const *argv[]) {
 
     //printData();
 
+    /********* QR **********/
+    vector<set<int>> componentsRQP;
+    cout << "\nComponentes conexas (R unido Q unido P) --"<<endl;
+    dfsComponents(edges,componentsRQP);
+    printComponents(componentsRQP);
+    for(auto const &comp : componentsRQP){
+        dijkstra(comp,edges,*comp.begin());
+
+        vector<int> d;
+        cout<<"Hojas = ";
+        findLeaves(comp, edges,d);
+        printVector(d);
+        cout<<endl;
+    }
+
+
+    /********* QR **********/
     vector<set<int>> componentsRQ;
-    vector<set<int>> componentsR;
     cout << "\nComponentes conexas (R unido Q) --"<<endl;
     dfsComponents(edgesRQ,componentsRQ);
     printComponents(componentsRQ);
+    for(auto const &comp : componentsRQ){
+        dijkstra(comp,edgesRQ,*comp.begin());
+
+        vector<int> d;
+        cout<<"Hojas = ";
+        findLeaves(comp, edgesRQ,d);
+        printVector(d);
+        cout<<endl;
+    }
+
+    /********* R **********/
+    //printEdgesMap(edgesR);
+    vector<set<int>> componentsR;
     cout << "\nComponentes conexas R --"<<endl;
     dfsComponents(edgesR,componentsR);
     printComponents(componentsR);
-
-    //prioridad de las componentes conexas del conj R
-    cout<<"\nCOLAS DE PRIORIDAD: \n";
-    //printEdgesMap(edgesR);
-    dijkstra(componentsR[10],edgesR,*componentsR[10].begin());
-    /*
     for(auto const &comp : componentsR){
         dijkstra(comp,edgesR,*comp.begin());
+
+        vector<int> d;
+        cout<<"Hojas = ";
+        findLeaves(comp, edgesR,d);
+        printVector(d);
+        cout<<endl;
     }
-*/
+
     return 0;
 }

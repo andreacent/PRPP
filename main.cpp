@@ -103,33 +103,51 @@ void dijkstra(set<int> components,map<int, vector<int>> edges, int s){
     vector<set<int>> comp;
     priority_queue<edgeCost,vector<edgeCost>,CompareBenefit> edge_cost;
     vector<int> path;
+    set<pair<int,int>> path_pair;
     path.push_back(s);    
     int sum =0;
 
     for(auto const &v : edges[s]){
-        edgeCost ec;
+        edgeCost ec,ec2;
         ec.edge = {s,v};
-        if(components.count(v) && data.count(ec.edge)) {
+        if( data.count(ec.edge)) {
             ec.cost = data[ec.edge][1] - data[ec.edge][0];
             edge_cost.push(ec);
-
-            //cout<<"ec "<<ec.edge.first<<","<<ec.edge.second<<" cost="<<ec.cost<<endl;
+        }
+        ec2.edge = {v,s};
+        if( data.count(ec2.edge)) {
+            ec.cost = data[ec2.edge][1] - data[ec2.edge][0];
+            edge_cost.push(ec);
         }
     }
     
     while(!edge_cost.empty()){
         edgeCost edc = edge_cost.top();
+        if(sum > sum+edc.cost) break;
         edge_cost.pop();
+        //cout<<"edc "<<edc.edge.first<<","<<edc.edge.second<<" cost="<<edc.cost<<endl;
         path.push_back(edc.edge.second);
+        path_pair.insert(edc.edge);
         sum+=edc.cost;
 
         for(auto const &v : edges[edc.edge.second]){
-            edgeCost ec;
+            edgeCost ec,ec2;
             ec.edge = {edc.edge.second,v};
-            if(components.count(v) && data.count(ec.edge)){
-                ec.cost = data[ec.edge][1] - data[ec.edge][0];
+            ec2.edge = {v,edc.edge.second};
+            if( data.count(ec.edge) && !path_pair.count(ec.edge)){//data[i,j] existe, no se ha pasado por [i,j]
+                if(path_pair.count(ec2.edge)) //si se paso por [j,i]
+                    ec.cost = -data[ec.edge][0];
+                else 
+                    ec.cost = data[ec.edge][1] - data[ec.edge][0];
                 edge_cost.push(ec);
-            }    
+            }
+
+            if(data.count(ec2.edge) && !path_pair.count(ec2.edge) ){//data[j,i] existe, no se ha pasado por [j,i]
+                if(path_pair.count(ec.edge)) //si se paso por [i,j]
+                    edge_cost.push({ec.edge,- data[ec2.edge][0]});
+                else 
+                    edge_cost.push({ec.edge,data[ec2.edge][1] - data[ec2.edge][0]});
+            }
         }
     } 
 
@@ -209,7 +227,6 @@ int main(int argc, char const *argv[]) {
     cout << "nonrqdEdges = "<<nonRqdEdges<<endl;
     setDataAndEdge(infile, nonRqdEdges, true);
 
-    //printEdgesMap(edges);
     //printData();
 
     vector<set<int>> componentsRQ;
@@ -223,9 +240,12 @@ int main(int argc, char const *argv[]) {
 
     //prioridad de las componentes conexas del conj R
     cout<<"\nCOLAS DE PRIORIDAD: \n";
+    //printEdgesMap(edgesR);
+    dijkstra(componentsR[10],edgesR,*componentsR[10].begin());
+    /*
     for(auto const &comp : componentsR){
         dijkstra(comp,edgesR,*comp.begin());
     }
-
+*/
     return 0;
 }

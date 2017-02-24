@@ -86,40 +86,51 @@ void dfsComponents(map<int, vector<int>> e,vector<set<int>> &components){
     }
 }
 
+struct edgeCost {
+  pair<int, int> edge;
+  int cost;
+};
+
 class CompareBenefit {
 public:
-    bool operator()(pair<int, int> &p1, pair<int, int> &p2) {
-        int b1 = data[p1][1] - data[p1][0];
-        int b2 = data[p2][1] - data[p2][0];
-        if (b1 < b2) return true;
+    bool operator()(edgeCost &e1, edgeCost &e2) {
+        if (e1.cost < e2.cost) return true;
         return false;
     }
 };
 
 void dijkstra(set<int> components,map<int, vector<int>> edges, int s){
     vector<set<int>> comp;
-    priority_queue<pair<int, int>,vector<pair<int, int>>,CompareBenefit> edge_cost;
+    priority_queue<edgeCost,vector<edgeCost>,CompareBenefit> edge_cost;
     vector<int> path;
     path.push_back(s);    
     int sum =0;
 
     for(auto const &v : edges[s]){
-        pair<int,int> p1 = {s,v};
-        if(components.count(v) && data.count(p1)) edge_cost.push(p1);
+        edgeCost ec;
+        ec.edge = {s,v};
+        if(components.count(v) && data.count(ec.edge)) {
+            ec.cost = data[ec.edge][1] - data[ec.edge][0];
+            edge_cost.push(ec);
+
+            //cout<<"ec "<<ec.edge.first<<","<<ec.edge.second<<" cost="<<ec.cost<<endl;
+        }
     }
     
     while(!edge_cost.empty()){
-        pair<int, int> p = edge_cost.top();
+        edgeCost edc = edge_cost.top();
         edge_cost.pop();
-        path.push_back(p.second);
+        path.push_back(edc.edge.second);
+        sum+=edc.cost;
 
-        for(auto const &v : edges[p.second]){
-            pair<int,int> p1 = {p.second,v};
-            if(components.count(v) && data.count(p1)) edge_cost.push(p1);
+        for(auto const &v : edges[edc.edge.second]){
+            edgeCost ec;
+            ec.edge = {edc.edge.second,v};
+            if(components.count(v) && data.count(ec.edge)){
+                ec.cost = data[ec.edge][1] - data[ec.edge][0];
+                edge_cost.push(ec);
+            }    
         }
-
-        int b = data[p][1] - data[p][0];
-        sum+=b;
     } 
 
     cout<<"PATH ";

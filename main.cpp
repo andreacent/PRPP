@@ -96,27 +96,35 @@ public:
     }
 };
 
-void kruskal(set<int> components,map<int, vector<int>> edges){
+void dijkstra(set<int> components,map<int, vector<int>> edges, int s){
     vector<set<int>> comp;
     priority_queue<pair<int, int>,vector<pair<int, int>>,CompareBenefit> edge_cost;
+    vector<int> path;
+    path.push_back(s);    
+    int sum =0;
 
-    for(auto const &c : components){
-        set<int> comp = {c};
-        comp.insert(c);
-        for(auto const &v : edges[c]){
-            //cout << "(" << c<<","<<v<<") "<<endl;
-            pair<int,int> p1 = {c,v};
-            if(data.count(p1)) edge_cost.push(p1);
-        }
+    for(auto const &v : edges[s]){
+        pair<int,int> p1 = {s,v};
+        if(components.count(v) && data.count(p1)) edge_cost.push(p1);
     }
     
-    int sum =0;
     while(!edge_cost.empty()){
         pair<int, int> p = edge_cost.top();
         edge_cost.pop();
+        path.push_back(p.second);
+
+        for(auto const &v : edges[p.second]){
+            pair<int,int> p1 = {p.second,v};
+            if(components.count(v) && data.count(p1)) edge_cost.push(p1);
+        }
+
         int b = data[p][1] - data[p][0];
-        cout << " (" << p.first<<","<<p.second<<") c="<<b;
         sum+=b;
+    } 
+
+    cout<<"PATH ";
+    for(auto const &v : path){
+        cout << v<<" ";
     }
     cout<<" SUM="<<sum<< endl;    
 }
@@ -205,7 +213,7 @@ int main(int argc, char const *argv[]) {
     //prioridad de las componentes conexas del conj R
     cout<<"\nCOLAS DE PRIORIDAD: \n";
     for(auto const &comp : componentsR){
-        kruskal(comp,edgesR);
+        dijkstra(comp,edgesR,*comp.begin());
     }
 
     return 0;

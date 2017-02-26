@@ -237,13 +237,66 @@ void setDataAndEdge(ifstream &infile, int loop, bool isP){
 }
 
 
-int isReachable(int s,map<int,set<int>> edges,set<int> vertices){
-    for(auto const &v : vertices){
-        if((int)edges[v].count(s)){
-            return v;
+//s: Hoja origen de la componente[0]
+//edges: conjunto de aristas de PQR
+//vertices: hojas de todos menos mi componente conexa
+//Veo adyacencias de vertice origen
+//Retorno Arista y Componente
+int Discover_connections(int s,map<int,set<int>> edges, deque<component> components){
+    int max = 0, v = -1;
+
+    for(auto const &c : components){
+        for(auto const &l : c.leaves){
+
+            //Si existe conexion
+            if((int)edges[l].count(s)){
+                total = c.benefit +(data[(l,s)][1] - 2*data[(l,s)][0]);
+                if (total>max){
+                    max = total;
+                    v = l;
+                }
+            }
         }
     }
-    return -1;
+    return make_pair(max,v);
+}
+//unir conjuntos de vertices de las dos componentes
+//componente[0].leaves le quitamos la hoja por la que nos conectamos
+//componente[i].leaves le quitamos la hoja por la que nos conectamos
+//unimos componente[0].leaves con componente[i].leaves
+//sumamos las ganancias 
+//borramos del deque la componente[i] --- componente.erase(componente.begin()+i);
+void join_byleaves(int i,int j, deque<component> components){
+
+    for (auto const &c : components) {
+
+        if(c.leaves.count(j)){
+            //remove leave from c
+
+            //remove leave from 0
+
+            //join components
+
+            //remove component c
+            
+        }
+    }
+}
+
+int Connect(deque<component> &components, set<int>> edges){
+    set<int> not0_leaves;
+
+    //Itero sobre hojas de componente[0]
+    for (auto const &i: components[0].leaves){
+        <max,j> = Discover_connections(i, edges, components);
+        if (max > 0){
+            //Uno componentes
+            join_byleaves(i, j, components);
+            //Agregar arista (i , j) a edgesR -- (i,j) y (j,i)
+            add_edge(i,j, edges);
+        }
+    }
+
 }
 
 void algorithm(deque<component> components, map<int,set<int>> edges, deque<path> &paths_data, map<int,set<int>> alledges){

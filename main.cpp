@@ -259,7 +259,7 @@ void setDataAndEdge(ifstream &infile, int loop, bool isP){
 //vertices: hojas de todos menos mi componente conexa
 //Veo adyacencias de vertice origen
 //Retorno Arista y Componente
-pair<int,int> Discover_connections(int s,map<int,set<int>> edges, deque<component> components){
+pair<int,int> discoverConnections(int s,map<int,set<int>> edges, deque<component> components){
     int total, max = 0, v = -1;
 
     for(auto const &c : components){
@@ -311,7 +311,7 @@ void join_byleaves(int i,int j, deque<component> components){
     }
 }
 
-int Connect(deque<component> &components, map<int,set<int>> edges){
+int connect(deque<component> &components, map<int,set<int>> edges){
     set<int> leaves;
     set<int> visited_leaves;
     pair<int,int> max_j;
@@ -320,7 +320,7 @@ int Connect(deque<component> &components, map<int,set<int>> edges){
     leaves = components[0].leaves;
     while (!leaves.empty()){
         it = leaves.begin();
-        max_j = Discover_connections(*it, edges, components);
+        max_j = discoverConnections(*it, edges, components);
 
         if (max_j.first > 0){
 
@@ -422,6 +422,9 @@ int main(int argc, char const *argv[]) {
     dfsComponents(edgesR,componentsR);
     printConnectedComponent(componentsR);
     algorithm(componentsR, edgesR,paths_data,edges);
+
+    connect(componentsR, edges);
+    printConnectedComponent(componentsR);
     //printComponents(paths_data);
 
     return 0;

@@ -13,6 +13,19 @@
 #include <queue>
 
 using namespace std;
+
+struct edgeCost {
+  pair<int, int> edge;
+  int cost;
+};
+
+
+struct component {
+  set<pair<int,int>> edges;
+  set<int> leaves;
+  int benefit;
+};
+
 map<int, vector<int>> edges; //Adjacency list
 map<int, vector<int>> edgesRQ; //Adjacency list RQ set
 map<int, vector<int>> edgesR; //Adjacency list R set
@@ -42,13 +55,23 @@ void printData(){
 }
 
 /* Print components vector */
-void printComponents(vector<set<int>> &components){
+void printConnectComponents(vector<set<int>> &components){
     for (unsigned i=0;i<components.size();i++) {
         cout<<"Componente "<< i <<": ";
         for(auto const &ver : components[i]){
             cout<<ver<<",";
         }
         cout<<endl;
+    }
+}
+
+void printComponents(deque<component> components){
+    for (auto const &comp : components) {
+        cout<<"Hojas: ";
+        for (auto const &l : comp.leaves) cout<<l<<" "; 
+        cout<<"\nAristas: ";
+        for(auto const &e : comp.edges) cout<<"("<< e.first <<" , "<<e.second << ") "; 
+        cout<<"\nGanancia: "<<comp.benefit<<endl;
     }
 }
 
@@ -98,11 +121,6 @@ void dfsComponents(map<int, vector<int>> e,vector<set<int>> &components){
         }
     }
 }
-
-struct edgeCost {
-  pair<int, int> edge;
-  int cost;
-};
 
 class CompareBenefit {
 public:
@@ -323,7 +341,8 @@ void setDataAndEdge(ifstream &infile, int loop, bool isP){
     }
 }
 
-void algorithm(vector<set<int>> components, map<int,vector<int>> edges){
+void algorithm(vector<set<int>> components, map<int,vector<int>> edges, deque<component> &components_data){
+
     for(auto const &comp : components){
         cout<<endl;
 
@@ -343,7 +362,8 @@ void algorithm(vector<set<int>> components, map<int,vector<int>> edges){
         deque<deque<int>> paths;
 
         //Corremos dijkstra para obtener el arbol de maximo beneficio
-        benefit = dijkstra(comp,edges,*comp.begin(),edge_path,paths);   
+        benefit = dijkstra(comp,edges,*comp.begin(),edge_path,paths);
+        components_data.push_back({edge_path,leavesR,benefit});  
         //benefit = kruskal(comp,edges,edge_path,paths); 
 
         cout<<"PATH: "; printSetOfPair(edge_path);
@@ -355,8 +375,6 @@ void algorithm(vector<set<int>> components, map<int,vector<int>> edges){
             }
             cout<<endl;
         }
-
-        cout<<endl;
     }
 }
 
@@ -396,10 +414,12 @@ int main(int argc, char const *argv[]) {
 
     /********* QR **********/
     vector<set<int>> componentsR;
+    deque<component> components_data;
     cout << "\nComponentes conexas R --"<<endl;
     dfsComponents(edgesR,componentsR);
-    printComponents(componentsR);
-    algorithm(componentsR, edgesR);
+    printConnectComponents(componentsR);
+    algorithm(componentsR, edgesR,components_data);
+    //printComponents(components_data);
 
     return 0;
 }

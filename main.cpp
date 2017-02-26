@@ -53,26 +53,43 @@ void dfsComponents( map<int, set<int>> edges,
 }
 
 bool fixPaths(deque<deque<int>> &paths){
-    bool change = false;
+    bool change = true;
     set<int> del;
     for(int i=1; i<(int)paths.size(); i++){
-        if(paths[0].back() == paths[i].front() || paths[0].front() == paths[i].front()){
-            for(unsigned k=0;k<paths[i].size();k++){
-               paths[0].push_back(paths[i][k]);
+        if(paths[0].back() == paths[i].front()){
+            paths[i].pop_front();
+            while(!paths[i].empty()){
+                int v = paths[i].front();
+                paths[i].pop_front();
+                paths[0].push_back(v);                
             }
-            del.insert(i);
-            change = true;
-        }else if(paths[0].front() == paths[i].back() || paths[0].back() == paths[i].back()){
-            for(unsigned k=paths[i].size()-1;k==0;k++){
-               paths[0].push_front(paths[i][k]);
+        }else if(paths[0].front() == paths[i].front()){
+            paths[i].pop_front();
+            while(!paths[i].empty()){
+                int v = paths[i].front();
+                paths[i].pop_front();
+                paths[0].push_front(v);                
             }
-            del.insert(i);
-            change = true;
+        }else if(paths[0].front() == paths[i].back()){
+            paths[i].pop_back();
+            while(!paths[i].empty()){
+                int v = paths[i].back();
+                paths[i].pop_back();
+                paths[0].push_front(v);                
+            }
+        }else if(paths[0].back() == paths[i].back()){
+            paths[i].pop_back();
+            while(!paths[i].empty()){
+                int v = paths[i].back();
+                paths[i].pop_back();
+                paths[0].push_back(v);                
+            }
+        }else{
+            change = false;
         }
+        if(change) del.insert(i);
     }
-    for(auto const &c : del){
-        paths.erase(paths.begin()+c);
-    }
+    for(auto const &c : del) paths.erase(paths.begin()+c);
     return change;
 }
 

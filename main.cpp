@@ -115,15 +115,16 @@ public:
 int dijkstra(  set<int> components,
                 map<int, vector<int>> edges, 
                 int s,
-                set<pair<int,int>> edge_leavesPQ,
                 set<pair<int,int>> &edge_path,
-                map<int,pair<int,int>> &degrees){ 
+                map<int,pair<int,int>> &degrees,
+                vector<deque<int>> &paths){ 
 
     priority_queue<edgeCost,vector<edgeCost>,CompareBenefit> edge_cost; //aristas por orden de beneficio
     priority_queue<edgeCost,vector<edgeCost>,CompareBenefit> edge_cost_retorned; //aristas repetidas (pertenecen a R) por orden de beneficio
     vector<int> path; //vertices por donde he pasado
     int sum =0;
     path.push_back(s); 
+    paths.push_back({s});
 
     for(auto const &v : edges[s]){
         edgeCost ec = {{s,v}, data[ec.edge][1] - data[ec.edge][0]};
@@ -136,7 +137,7 @@ int dijkstra(  set<int> components,
         //cout<<"edc "<<edc.edge.first<<","<<edc.edge.second<<" cost="<<edc.cost<<endl;
 
         //if( edge_path.count(edc.edge) > 0 && sum > sum+edc.cost ) continue; //no repetir arista dirigida
-        if( edge_path.count(edc.edge) > 0 ) continue; //no repetir arista dirigida
+        if( edge_path.count(edc.edge) > 0 || edge_path.count(make_pair(edc.edge.second,edc.edge.first)) > 0) continue; //no repetir arista dirigida
 
         //Increase degree of vertices
         if(degrees.count(edc.edge.first)) degrees[edc.edge.first].first += 1;
@@ -145,6 +146,35 @@ int dijkstra(  set<int> components,
         else degrees[edc.edge.second].second = 1;
         
         path.push_back(edc.edge.second);
+
+        int iter = -1;
+        bool back = true;
+        bool second = true;
+        for(unsigned i=0;i<paths.size();i++){
+            if(paths[i].back() == edc.edge.first){
+                iter = i;
+                break;
+            }else if(paths[i].front() == edc.edge.first){
+                iter = i;
+                back = false;
+                break;
+            }else if(paths[i].back() == edc.edge.second){
+                iter = i;
+                second = false;
+                break;
+            }else if(paths[i].front() == edc.edge.second){
+                iter = i;
+                second = false;
+                back = false;
+                break;
+            }
+        }
+        if(iter < 0) paths.push_back({edc.edge.first,edc.edge.second});
+        else if(back && second) paths[iter].push_back(edc.edge.second);
+        else if (second) paths[iter].push_front(edc.edge.second);
+        else if(back) paths[iter].push_back(edc.edge.first);
+        else paths[iter].push_front(edc.edge.first);
+
         edge_path.insert(edc.edge);
         sum+=edc.cost;
 
@@ -153,18 +183,10 @@ int dijkstra(  set<int> components,
             ec.edge = { edc.edge.second, v };
             ec2.edge = { v, edc.edge.second };
 
-            if( edge_leavesPQ.count(ec.edge) ||  edge_leavesPQ.count(ec2.edge) ) continue; //Hoja que genera perdida
-
             if( !edge_path.count(ec.edge) && !edge_path.count(ec2.edge) ){ //no ha pasado por [i,j], ni [j,i]
                 ec.cost = data[ec.edge][1] - data[ec.edge][0];
                 edge_cost.push(ec);
-            }else if( !edge_path.count(ec.edge) && data[ec.edge][2] == 1 ){ //ha pasado por [j,i]
-                ec.cost = data[ec.edge][1] - data[ec.edge][0];
-                edge_cost_retorned.push(ec);
-            }/*else if( !edge_path.count(ec2.edge) && data[ec2.edge][2] == 1 ){ //ha pasado por [i,j]
-                ec2.cost = data[ec2.edge][1] - data[ec2.edge][0];
-                edge_cost_retorned.push(ec2);
-            }*/
+            }
         }
     } 
 
@@ -292,66 +314,30 @@ int main(int argc, char const *argv[]) {
         int benefit; // path benefit 
         int cost_leavesR; // return cost from belonged leaves to R
         map<int,pair<int,int>> degrees; //vertices degree (salen,entran)
+        vector<deque<int>> paths;
 
         //Obtenemos las hojas que perteneces a R y a QP
         cost_leavesR = findEdgeLeaves(comp,edgesRQ,edge_leavesR,edge_leavesPQ,leavesR);
-        cout<<"EdgeLeaves PQ: ";
-        printSetOfPair(edge_leavesPQ);
+        //cout<<"EdgeLeaves PQ: ";
+        //printSetOfPair(edge_leavesPQ);
 
         //Corremos dijkstra para obtener el arbol de maximo beneficio
-        benefit = dijkstra(comp,edgesRQ,*comp.begin(),edge_leavesPQ,edge_path,degrees);    
+        benefit = dijkstra(comp,edgesRQ,*comp.begin(),edge_path,degrees,paths);    
         cout<<"PATH: "; printSetOfPair(edge_path);
         cout<<"Beneficio = "<<benefit<<endl;
 
-        if(edge_leavesR.size()){
-            //Al arbol dado por dijkstra le agregamos los retornos de las hojas cuyas aristas estan en R            
-            edge_path.insert(edge_leavesR.begin(), edge_leavesR.end());
-            benefit -= cost_leavesR;
 
-            //increase degree
-            for(auto const &l : edge_leavesR){
-                degrees[l.first].first +=1;
-                degrees[l.second].second +=1;
-            }
-
-            cout<<"--Retornar desde las hojas R--\n";
-            cout<<"Hojas R: "; for(auto const &l : leavesR) cout<<" "<<l; cout<<endl;
-            cout<<"EdgeLeaves R: "; printSetOfPair(edge_leavesR);
-            cout<<"PATH: "; printSetOfPair(edge_path);
-            cout<<"Beneficio = "<<benefit<<endl;
-
-            cout<<"Grado de vertices: "; 
-            for(auto const &d : degrees){
-                cout<<"D("<<d.first<<")=("<<d.second.first<<","<<d.second.second<<") ";
+        cout<<"Caminos: \n"; 
+        for(auto const &p : paths){
+            for(auto const &v : p){
+                cout<<v<<" "; 
             }
             cout<<endl;
         }
-    }
-    /********* QRP *********
-    vector<set<int>> componentsRQP;
-    cout << "\nComponentes conexas (R unido Q unido P) --"<<endl;
-    dfsComponents(edges,componentsRQP);
-    printComponents(componentsRQP);
-    for(auto const &comp : componentsRQP){
-        dijkstra(comp,edges,*comp.begin());
-    }
-    */
 
-    /********* R *********
-    //printEdgesMap(edgesR);
-    vector<set<int>> componentsR;
-    cout << "\nComponentes conexas R --"<<endl;
-    dfsComponents(edgesR,componentsR);
-    printComponents(componentsR);
-    for(auto const &comp : componentsR){
-        dijkstra(comp,edgesR,*comp.begin());
-
-        vector<int> d;
-        cout<<"Hojas R = ";
-        findLeaves(comp, edgesR,d,1);
-        printVector(d);
         cout<<endl;
-    }*/
+
+    }
 
     return 0;
 }

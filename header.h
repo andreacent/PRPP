@@ -20,8 +20,14 @@ struct edgeCost {
 };
 
 
-struct component {
+struct path {
   set<pair<int,int>> edges;
+  set<int> leaves;
+  int benefit;
+};
+
+struct component {
+  set<int> vertices;
   set<int> leaves;
   int benefit;
 };

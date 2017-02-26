@@ -29,18 +29,20 @@ void printData(map<pair<int, int>, vector<int>> data){
 }
 
 /* Print connected components vector */
-void printConnectedComponent(vector<set<int>> components){
-    for (unsigned i=0;i<components.size();i++) {
-        cout<<"Componente "<< i <<": ";
-        for(auto const &ver : components[i]){
-            cout<<ver<<",";
-        }
-        cout<<endl;
+void printConnectedComponent(deque<component> components){
+    cout<<components.size()<<" componentes";
+    for (auto const &comp : components) {
+        cout<<"\nVertices: ";
+        for (auto const &l : comp.vertices) cout<<l<<" "; 
+        cout<<"\nHojas: ";
+        for (auto const &l : comp.leaves) cout<<l<<" "; 
+        cout<<"\nGanancia: "<<comp.benefit<<endl;
     }
+    cout<<endl;
 }
 
 /* Print component struct */
-void printComponents(deque<component> components){
+void printComponents(deque<path> components){
     for (auto const &comp : components) {
         cout<<"Hojas: ";
         for (auto const &l : comp.leaves) cout<<l<<" "; 

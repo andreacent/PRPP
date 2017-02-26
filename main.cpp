@@ -12,34 +12,41 @@ map<int, set<int>> edgesR; //Adjacency list R set
 map<pair<int, int>, vector<int>> data; //Edge data
 
 /*Return true if the vertice is in any set of the vector c*/
-bool isInSet(vector<set<int>> c,int vertice){
+bool isInSet(deque<component> c,int vertice){
     for (auto const &s : c) {
-        if(s.count(vertice)) return true;
+        if(s.vertices.count(vertice)) return true;
     }
     return false;
 }
 
 /*Function used by dfsComponents*/
-void getComponents(int v,int i,map<int, set<int>> e,vector<set<int>> &components){
-    for(auto const &s : e[v]){
+void getComponents( int v, int i,
+                    map<int, set<int>> edges,
+                    deque<component> &components){
+    for(auto const &s : edges[v]){
+        pair<int,int> ec = {v,s};
+        bool is_leaf = (int)edges[s].size() == 1;
         if((int)components.size() <= i){
             set<int> comp = {s};
-            components.push_back(comp);
-            getComponents(s,i,e,components);
-        }else if(!components[i].count(s)){
-            components[i].insert(s);
-            getComponents(s,i,e,components);
+            if(is_leaf) components.push_back({comp,{s},data[ec][1] - data[ec][0]});
+            else components.push_back({comp,{},data[ec][1] - data[ec][0]});
+            getComponents(s,i,edges,components);
+        }else if(!components[i].vertices.count(s)){
+            components[i].vertices.insert(s);
+            components[i].benefit += data[ec][1] - data[ec][0];
+            if(is_leaf) components[i].leaves.insert(s);
+            getComponents(s,i,edges,components);
         }
     }
 }
+
 /*dfs algorithm to find all connected components of set*/
-void dfsComponents(map<int, set<int>> e,vector<set<int>> &components){
+void dfsComponents( map<int, set<int>> edges,
+                    deque<component> &components){ 
     int i =0;
-    for (auto const &s : e) {
+    for (auto const &s : edges) {
         if(!isInSet(components,s.first)){ 
-            getComponents(s.first,i,e,components);
-            //if(!components[i].count(0)) components.erase(components.begin()+i);
-            //else i++;
+            getComponents(s.first,i,edges,components);
             i++;
         }
     }
@@ -190,18 +197,6 @@ int kruskal(set<int> components,
     return sum;
 }
 
-void findLeaves(set<int> components,
-                    map<int,set<int>> edges,
-                    set<pair<int,int>> &edges_leaves,
-                    set<int> &vertices){
-    for(auto const &c : components){
-        if((int)edges[c].size() == 1){
-            edges_leaves.insert(make_pair(c,*edges[c].begin()));
-            vertices.insert(c);
-        }
-    }
-}
-
 void insertData(int i,int j, int c,int b, bool isP){
     data[make_pair(i,j)].push_back(c);
     data[make_pair(i,j)].push_back(b);
@@ -241,28 +236,28 @@ void setDataAndEdge(ifstream &infile, int loop, bool isP){
     }
 }
 
-void algorithm(vector<set<int>> components, map<int,set<int>> edges, deque<component> &components_data){
+
+int isReachable(int s,map<int,set<int>> edges,set<int> vertices){
+    for(auto const &v : vertices){
+        if((int)edges[v].count(s)){
+            return v;
+        }
+    }
+    return -1;
+}
+
+void algorithm(deque<component> components, map<int,set<int>> edges, deque<path> &paths_data, map<int,set<int>> alledges){
 
     for(auto const &comp : components){
         cout<<endl;
-
-        set<pair<int,int>> edge_leaves; //Aristas de hojas que no generan perdidas
-        set<int> leaves; // belonged leaves to R
-
-        //Obtenemos las hojas que perteneces a R y a QP
-        findLeaves(comp,edges,edge_leaves,leaves);
-        //cout<<"EdgeLeaves R: ";
-        //printSetOfPair(edge_leavesR);
-        cout<<"Hojas: "; for(auto const &l : leaves) cout<<l<<" "; cout<<endl;
-
 
         set<pair<int,int>> edge_path; // edges of actual path
         int benefit; // path benefit 
         deque<deque<int>> paths;
 
         //Corremos dijkstra para obtener el arbol de maximo beneficio
-        benefit = dijkstra(*comp.begin(),edges,edge_path,paths);
-        components_data.push_back({edge_path,leaves,benefit});  
+        benefit = dijkstra(*comp.vertices.begin(),edges,edge_path,paths);
+        paths_data.push_back({edge_path,comp.leaves,benefit});  
         //benefit = kruskal(comp,edges,edge_path,paths); 
 
         cout<<"PATH: "; printSetOfPair(edge_path);
@@ -312,13 +307,13 @@ int main(int argc, char const *argv[]) {
     //printData(data);
 
     /********* QR **********/
-    vector<set<int>> componentsR;
-    deque<component> components_data;
+    deque<component> componentsRQ;
+    deque<path> paths_data;
     cout << "\nComponentes conexas R --"<<endl;
-    dfsComponents(edgesR,componentsR);
-    printConnectedComponent(componentsR);
-    algorithm(componentsR, edgesR,components_data);
-    //printComponents(components_data);
+    dfsComponents(edgesRQ,componentsRQ);
+    printConnectedComponent(componentsRQ);
+    algorithm(componentsRQ, edgesRQ,paths_data,edges);
+    //printComponents(paths_data);
 
     return 0;
 }

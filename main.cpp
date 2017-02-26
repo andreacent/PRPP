@@ -295,19 +295,36 @@ void join_byleaves(int i,int j, deque<component> components){
 }
 
 int Connect(deque<component> &components, map<int,set<int>> edges){
-    set<int> not0_leaves;
+    set<int> leaves;
+    set<int> visited_leaves;
     pair<int,int> max_j;
-    //Itero sobre hojas de componente[0]
-    for (auto const &i: components[0].leaves){
-        max_j = Discover_connections(i, edges, components);
+    set<int>::iterator it;
+
+    leaves = components[0].leaves;
+    while (!leaves.empty()){
+        it = leaves.begin();
+        max_j = Discover_connections(*it, edges, components);
+
         if (max_j.first > 0){
+
             //Uno componentes
-            join_byleaves(i, max_j.second, components);
-            //Agregar arista (i , j) a edgesR -- (i,j) y (j,i)
-            //add_edge(i,j, edges);
+            join_byleaves(*it, max_j.second, components);
+
+            //Agregar arista a edges
+            //(i,j)
+            edges[*it].insert(max_j.second);
+            //(j,i)
+            edges[max_j.second].insert(*it);
+
         }
+
+        //Visited leaves
+        visited_leaves.insert(*it);
+        leaves = components[0].leaves;
+        //Resta conjuntos leaves-visited_leaves
+        leaves.erase(visited_leaves.begin(), visited_leaves.end());
     }
-    return -1;
+    return 0;
 
 }
 

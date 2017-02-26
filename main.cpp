@@ -306,13 +306,23 @@ int main(int argc, char const *argv[]) {
 
     //printData(data);
 
-    /********* QR **********/
+    /********* QR *********
     deque<component> componentsRQ;
     deque<path> paths_data;
     cout << "\nComponentes conexas R --"<<endl;
     dfsComponents(edgesRQ,componentsRQ);
     printConnectedComponent(componentsRQ);
     algorithm(componentsRQ, edgesRQ,paths_data,edges);
+    //printComponents(paths_data);
+    */
+
+    /********* R **********/
+    deque<component> componentsR;
+    deque<path> paths_data;
+    cout << "\nComponentes conexas R --"<<endl;
+    dfsComponents(edgesR,componentsR);
+    printConnectedComponent(componentsR);
+    algorithm(componentsR, edgesR,paths_data,edges);
     //printComponents(paths_data);
 
     return 0;

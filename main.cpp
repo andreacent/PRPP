@@ -246,14 +246,14 @@ void algorithm(vector<set<int>> components, map<int,set<int>> edges, deque<compo
     for(auto const &comp : components){
         cout<<endl;
 
-        set<pair<int,int>> edge_leavesR; //Aristas de hojas que no generan perdidas
-        set<int> leavesR; // belonged leaves to R
+        set<pair<int,int>> edge_leaves; //Aristas de hojas que no generan perdidas
+        set<int> leaves; // belonged leaves to R
 
         //Obtenemos las hojas que perteneces a R y a QP
-        findLeaves(comp,edges,edge_leavesR,leavesR);
+        findLeaves(comp,edges,edge_leaves,leaves);
         //cout<<"EdgeLeaves R: ";
         //printSetOfPair(edge_leavesR);
-        cout<<"Hojas: "; for(auto const &l : leavesR) cout<<l<<" "; cout<<endl;
+        cout<<"Hojas: "; for(auto const &l : leaves) cout<<l<<" "; cout<<endl;
 
 
         set<pair<int,int>> edge_path; // edges of actual path
@@ -262,7 +262,7 @@ void algorithm(vector<set<int>> components, map<int,set<int>> edges, deque<compo
 
         //Corremos dijkstra para obtener el arbol de maximo beneficio
         benefit = dijkstra(*comp.begin(),edges,edge_path,paths);
-        components_data.push_back({edge_path,leavesR,benefit});  
+        components_data.push_back({edge_path,leaves,benefit});  
         //benefit = kruskal(comp,edges,edge_path,paths); 
 
         cout<<"PATH: "; printSetOfPair(edge_path);

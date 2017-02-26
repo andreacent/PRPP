@@ -112,18 +112,38 @@ public:
     }
 };
 
-int dijkstra(  set<int> components,
+bool fixPaths(deque<deque<int>> &paths){
+    bool change = false;
+    set<int> del;
+    for(int i=1; i<(int)paths.size(); i++){
+        if(paths[0].back() == paths[i].front() || paths[0].front() == paths[i].front()){
+            for(unsigned k=0;k<paths[i].size();k++){
+               paths[0].push_back(paths[i][k]);
+            }
+            del.insert(i);
+            change = true;
+        }else if(paths[0].front() == paths[i].back() || paths[0].back() == paths[i].back()){
+            for(unsigned k=paths[i].size()-1;k==0;k++){
+               paths[0].push_front(paths[i][k]);
+            }
+            del.insert(i);
+            change = true;
+        }
+    }
+    for(auto const &c : del){
+        paths.erase(paths.begin()+c);
+    }
+    return change;
+}
+
+int dijkstra(   set<int> components,
                 map<int, vector<int>> edges, 
                 int s,
                 set<pair<int,int>> &edge_path,
-                map<int,pair<int,int>> &degrees,
-                vector<deque<int>> &paths){ 
+                deque<deque<int>> &paths){ 
 
     priority_queue<edgeCost,vector<edgeCost>,CompareBenefit> edge_cost; //aristas por orden de beneficio
-    priority_queue<edgeCost,vector<edgeCost>,CompareBenefit> edge_cost_retorned; //aristas repetidas (pertenecen a R) por orden de beneficio
-    vector<int> path; //vertices por donde he pasado
     int sum =0;
-    path.push_back(s); 
     paths.push_back({s});
 
     for(auto const &v : edges[s]){
@@ -134,46 +154,32 @@ int dijkstra(  set<int> components,
     while(!edge_cost.empty()){
         edgeCost edc = edge_cost.top();
         edge_cost.pop();
-        //cout<<"edc "<<edc.edge.first<<","<<edc.edge.second<<" cost="<<edc.cost<<endl;
 
-        //if( edge_path.count(edc.edge) > 0 && sum > sum+edc.cost ) continue; //no repetir arista dirigida
         if( edge_path.count(edc.edge) > 0 || edge_path.count(make_pair(edc.edge.second,edc.edge.first)) > 0) continue; //no repetir arista dirigida
-
-        //Increase degree of vertices
-        if(degrees.count(edc.edge.first)) degrees[edc.edge.first].first += 1;
-        else degrees[edc.edge.first].first = 1;
-        if(degrees.count(edc.edge.second)) degrees[edc.edge.second].second += 1;
-        else degrees[edc.edge.second].second = 1;
         
-        path.push_back(edc.edge.second);
-
-        int iter = -1;
         bool back = true;
-        bool second = true;
-        for(unsigned i=0;i<paths.size();i++){
+        int element;
+        unsigned i=0;
+        for(i=0;i<paths.size();i++){
             if(paths[i].back() == edc.edge.first){
-                iter = i;
+                element = edc.edge.second;
                 break;
             }else if(paths[i].front() == edc.edge.first){
-                iter = i;
+                element = edc.edge.second;
                 back = false;
                 break;
             }else if(paths[i].back() == edc.edge.second){
-                iter = i;
-                second = false;
+                element = edc.edge.first;
                 break;
             }else if(paths[i].front() == edc.edge.second){
-                iter = i;
-                second = false;
+                element = edc.edge.first;
                 back = false;
                 break;
             }
         }
-        if(iter < 0) paths.push_back({edc.edge.first,edc.edge.second});
-        else if(back && second) paths[iter].push_back(edc.edge.second);
-        else if (second) paths[iter].push_front(edc.edge.second);
-        else if(back) paths[iter].push_back(edc.edge.first);
-        else paths[iter].push_front(edc.edge.first);
+        if(i == paths.size()) paths.push_back({edc.edge.first,edc.edge.second});
+        else if(back) paths[i].push_back(element);
+        else paths[i].push_front(element);
 
         edge_path.insert(edc.edge);
         sum+=edc.cost;
@@ -190,9 +196,64 @@ int dijkstra(  set<int> components,
         }
     } 
 
-    //cout<<"PATH ";
-    //printVector(path);
-    //cout<<" SUM="<<sum<< endl; 
+    //fixPaths(paths);
+
+    return sum;
+}
+
+int kruskal(set<int> components,
+            map<int, vector<int>> edges, 
+            set<pair<int,int>> &edge_path,
+            deque<deque<int>> &paths){ 
+
+    priority_queue<edgeCost,vector<edgeCost>,CompareBenefit> edge_cost; //aristas por orden de beneficio
+    int sum =0;
+
+    for(auto const &c : components){
+        for(auto const &v : edges[c]){
+            edgeCost ec;
+            ec.edge = {c,v};
+            ec.cost = data[ec.edge][1] - data[ec.edge][0];
+            edge_cost.push(ec);
+        }
+    }
+    
+    while(!edge_cost.empty()){
+        edgeCost edc = edge_cost.top();
+        edge_cost.pop();
+
+        if( edge_path.count(edc.edge) > 0 || edge_path.count(make_pair(edc.edge.second,edc.edge.first)) > 0) continue; //no repetir arista dirigida
+        
+        //CREO EL ARBOL
+        bool back = true;
+        int element;
+        unsigned i=0;
+        for(i=0;i<paths.size();i++){
+            if(paths[i].back() == edc.edge.first){
+                element = edc.edge.second;
+                break;
+            }else if(paths[i].front() == edc.edge.first){
+                element = edc.edge.second;
+                back = false;
+                break;
+            }else if(paths[i].back() == edc.edge.second){
+                element = edc.edge.first;
+                break;
+            }else if(paths[i].front() == edc.edge.second){
+                element = edc.edge.first;
+                back = false;
+                break;
+            }
+        }
+        if(i == paths.size()) paths.push_back({edc.edge.first,edc.edge.second});
+        else if(back) paths[i].push_back(element);
+        else paths[i].push_front(element);
+
+        edge_path.insert(edc.edge);
+        sum+=edc.cost;
+    } 
+
+    //while(fixPaths(paths));
 
     return sum;
 }
@@ -206,24 +267,21 @@ void findLeaves(set<int> components,map<int, vector<int>> edges,vector<int> &d, 
     }
 }
 
-int findEdgeLeaves(set<int> components,
+void findEdgeLeaves(set<int> components,
                     map<int,vector<int>> edges,
                     set<pair<int,int>> &r,
                     set<pair<int,int>> &pq,
                     set<int> &verticesR){
-    int return_costR = 0; //costo de retornar de las hojas R
     for(auto const &c : components){
         if((int)edges[c].size() == 1){
             pair<int,int> edge = {c,edges[c][0]};
             if (data[edge][2] < 1) pq.insert(edge);
             else if (data[edge][2] == 1){ 
                 r.insert(edge);
-                return_costR += data[edge][0];
                 verticesR.insert(c);
             }
         }
     }
-    return return_costR;
 }
 
 void insertData(int i,int j, int c,int b, bool isP){
@@ -265,6 +323,43 @@ void setDataAndEdge(ifstream &infile, int loop, bool isP){
     }
 }
 
+void algorithm(vector<set<int>> components, map<int,vector<int>> edges){
+    for(auto const &comp : components){
+        cout<<endl;
+
+        set<pair<int,int>> edge_leavesPQ; //Aristas de hojas que generan perdidas
+        set<pair<int,int>> edge_leavesR; //Aristas de hojas que no generan perdidas
+        set<int> leavesR; // belonged leaves to R
+
+        //Obtenemos las hojas que perteneces a R y a QP
+        findEdgeLeaves(comp,edges,edge_leavesR,edge_leavesPQ,leavesR);
+        //cout<<"EdgeLeaves R: ";
+        //printSetOfPair(edge_leavesR);
+        cout<<"Hojas: "; for(auto const &l : leavesR) cout<<l<<" "; cout<<endl;
+
+
+        set<pair<int,int>> edge_path; // edges of actual path
+        int benefit; // path benefit 
+        deque<deque<int>> paths;
+
+        //Corremos dijkstra para obtener el arbol de maximo beneficio
+        benefit = dijkstra(comp,edges,*comp.begin(),edge_path,paths);   
+        //benefit = kruskal(comp,edges,edge_path,paths); 
+
+        cout<<"PATH: "; printSetOfPair(edge_path);
+        cout<<"Beneficio = "<<benefit<<endl;
+        cout<<"Caminos: \n"; 
+        for(auto const &p : paths){
+            for(auto const &v : p){
+                cout<<v<<" "; 
+            }
+            cout<<endl;
+        }
+
+        cout<<endl;
+    }
+}
+
 /*
 argv[1] -> intance
 */
@@ -300,44 +395,11 @@ int main(int argc, char const *argv[]) {
     //printData();
 
     /********* QR **********/
-    vector<set<int>> componentsRQ;
-    cout << "\nComponentes conexas (R unido Q) --"<<endl;
-    dfsComponents(edgesRQ,componentsRQ);
-    printComponents(componentsRQ);
-    for(auto const &comp : componentsRQ){
-        cout<<endl;
-
-        set<pair<int,int>> edge_path; // edges of actual path
-        set<pair<int,int>> edge_leavesPQ; //Aristas de hojas que generan perdidas
-        set<pair<int,int>> edge_leavesR; //Aristas de hojas que no generan perdidas
-        set<int> leavesR; // belonged leaves to R
-        int benefit; // path benefit 
-        int cost_leavesR; // return cost from belonged leaves to R
-        map<int,pair<int,int>> degrees; //vertices degree (salen,entran)
-        vector<deque<int>> paths;
-
-        //Obtenemos las hojas que perteneces a R y a QP
-        cost_leavesR = findEdgeLeaves(comp,edgesRQ,edge_leavesR,edge_leavesPQ,leavesR);
-        //cout<<"EdgeLeaves PQ: ";
-        //printSetOfPair(edge_leavesPQ);
-
-        //Corremos dijkstra para obtener el arbol de maximo beneficio
-        benefit = dijkstra(comp,edgesRQ,*comp.begin(),edge_path,degrees,paths);    
-        cout<<"PATH: "; printSetOfPair(edge_path);
-        cout<<"Beneficio = "<<benefit<<endl;
-
-
-        cout<<"Caminos: \n"; 
-        for(auto const &p : paths){
-            for(auto const &v : p){
-                cout<<v<<" "; 
-            }
-            cout<<endl;
-        }
-
-        cout<<endl;
-
-    }
+    vector<set<int>> componentsR;
+    cout << "\nComponentes conexas R --"<<endl;
+    dfsComponents(edgesR,componentsR);
+    printComponents(componentsR);
+    algorithm(componentsR, edgesR);
 
     return 0;
 }

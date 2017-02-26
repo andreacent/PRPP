@@ -154,9 +154,8 @@ bool fixPaths(deque<deque<int>> &paths){
     return change;
 }
 
-int dijkstra(   set<int> components,
+int dijkstra(   int s,
                 map<int, vector<int>> edges, 
-                int s,
                 set<pair<int,int>> &edge_path,
                 deque<deque<int>> &paths){ 
 
@@ -362,7 +361,7 @@ void algorithm(vector<set<int>> components, map<int,vector<int>> edges, deque<co
         deque<deque<int>> paths;
 
         //Corremos dijkstra para obtener el arbol de maximo beneficio
-        benefit = dijkstra(comp,edges,*comp.begin(),edge_path,paths);
+        benefit = dijkstra(*comp.begin(),edges,edge_path,paths);
         components_data.push_back({edge_path,leavesR,benefit});  
         //benefit = kruskal(comp,edges,edge_path,paths); 
 

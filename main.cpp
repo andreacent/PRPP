@@ -1,92 +1,15 @@
 /*  
-    Proyecto I - Inteligencia Artificial II
+    Proyecto I - Diseno de algoritmos I
     Isaac Gonzalez  11-10396
     Andrea Centeno  10-10138
 */
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <map>
-#include <vector> 
-#include <set>
-#include <queue>
 
-using namespace std;
+#include "print.h"
 
-struct edgeCost {
-  pair<int, int> edge;
-  int cost;
-};
-
-
-struct component {
-  set<pair<int,int>> edges;
-  set<int> leaves;
-  int benefit;
-};
-
-map<int, vector<int>> edges; //Adjacency list
-map<int, vector<int>> edgesRQ; //Adjacency list RQ set
-map<int, vector<int>> edgesR; //Adjacency list R set
+map<int, set<int>> edges; //Adjacency list
+map<int, set<int>> edgesRQ; //Adjacency list RQ set
+map<int, set<int>> edgesR; //Adjacency list R set
 map<pair<int, int>, vector<int>> data; //Edge data
-
-//////////////PRINT FUNCTIONS//////////////
-/* Print map of edges */
-void printEdgesMap(map<int, vector<int>> e){
-    for (auto const &f : e) {
-        cout<<"Nodo "<< f.first << ":";
-        for(auto const &s : f.second){
-            cout<<" "<< s;
-        }
-        cout<<endl;
-    }
-}
-
-/* Print edges data */
-void printData(){
-    for (auto const &d : data) {
-        cout<<"("<< d.first.first <<" , "<<d.first.second << ") :";
-        for(auto const &val : d.second){
-            cout<<"\t"<< val;
-        }
-        cout<<endl;
-    }
-}
-
-/* Print components vector */
-void printConnectComponents(vector<set<int>> &components){
-    for (unsigned i=0;i<components.size();i++) {
-        cout<<"Componente "<< i <<": ";
-        for(auto const &ver : components[i]){
-            cout<<ver<<",";
-        }
-        cout<<endl;
-    }
-}
-
-void printComponents(deque<component> components){
-    for (auto const &comp : components) {
-        cout<<"Hojas: ";
-        for (auto const &l : comp.leaves) cout<<l<<" "; 
-        cout<<"\nAristas: ";
-        for(auto const &e : comp.edges) cout<<"("<< e.first <<" , "<<e.second << ") "; 
-        cout<<"\nGanancia: "<<comp.benefit<<endl;
-    }
-}
-
-/* Print vector of int */
-void printVector(vector<int> vec){
-    for (auto const &v : vec) {
-        cout<<v<<" ";
-    }
-}
-
-void printSetOfPair(set<pair<int,int>> set_pair){
-    for(auto const &p : set_pair) cout<<"("<<p.first<<","<<p.second<<") ";
-    cout<<endl; 
-}
-////////////////////////////////////////////
 
 /*Return true if the vertice is in any set of the vector c*/
 bool isInSet(vector<set<int>> c,int vertice){
@@ -97,7 +20,7 @@ bool isInSet(vector<set<int>> c,int vertice){
 }
 
 /*Function used by dfsComponents*/
-void getComponents(int v,int i,map<int, vector<int>> e,vector<set<int>> &components){
+void getComponents(int v,int i,map<int, set<int>> e,vector<set<int>> &components){
     for(auto const &s : e[v]){
         if((int)components.size() <= i){
             set<int> comp = {s};
@@ -110,7 +33,7 @@ void getComponents(int v,int i,map<int, vector<int>> e,vector<set<int>> &compone
     }
 }
 /*dfs algorithm to find all connected components of set*/
-void dfsComponents(map<int, vector<int>> e,vector<set<int>> &components){
+void dfsComponents(map<int, set<int>> e,vector<set<int>> &components){
     int i =0;
     for (auto const &s : e) {
         if(!isInSet(components,s.first)){ 
@@ -121,14 +44,6 @@ void dfsComponents(map<int, vector<int>> e,vector<set<int>> &components){
         }
     }
 }
-
-class CompareBenefit {
-public:
-    bool operator()(edgeCost &e1, edgeCost &e2) {
-        if (e1.cost < e2.cost) return true;
-        return false;
-    }
-};
 
 bool fixPaths(deque<deque<int>> &paths){
     bool change = false;
@@ -155,7 +70,7 @@ bool fixPaths(deque<deque<int>> &paths){
 }
 
 int dijkstra(   int s,
-                map<int, vector<int>> edges, 
+                map<int, set<int>> edges, 
                 set<pair<int,int>> &edge_path,
                 deque<deque<int>> &paths){ 
 
@@ -219,7 +134,7 @@ int dijkstra(   int s,
 }
 
 int kruskal(set<int> components,
-            map<int, vector<int>> edges, 
+            map<int, set<int>> edges, 
             set<pair<int,int>> &edge_path,
             deque<deque<int>> &paths){ 
 
@@ -275,28 +190,14 @@ int kruskal(set<int> components,
     return sum;
 }
 
-void findLeaves(set<int> components,map<int, vector<int>> edges,vector<int> &d, char t){
+void findLeaves(set<int> components,
+                    map<int,set<int>> edges,
+                    set<pair<int,int>> &edges_leaves,
+                    set<int> &vertices){
     for(auto const &c : components){
         if((int)edges[c].size() == 1){
-            if (data.count(make_pair(c,edges[c][0])) && data[make_pair(c,edges[c][0])][2] == t)
-                d.push_back(c);
-        }
-    }
-}
-
-void findEdgeLeaves(set<int> components,
-                    map<int,vector<int>> edges,
-                    set<pair<int,int>> &r,
-                    set<pair<int,int>> &pq,
-                    set<int> &verticesR){
-    for(auto const &c : components){
-        if((int)edges[c].size() == 1){
-            pair<int,int> edge = {c,edges[c][0]};
-            if (data[edge][2] < 1) pq.insert(edge);
-            else if (data[edge][2] == 1){ 
-                r.insert(edge);
-                verticesR.insert(c);
-            }
+            edges_leaves.insert(make_pair(c,*edges[c].begin()));
+            vertices.insert(c);
         }
     }
 }
@@ -306,16 +207,16 @@ void insertData(int i,int j, int c,int b, bool isP){
     data[make_pair(i,j)].push_back(b);
     //is P, R or Q
     if(!isP){
-        edgesRQ[i].push_back(j);
+        edgesRQ[i].insert(j);
         if(c*2 <= b){
             data[make_pair(i,j)].push_back(1); //R
-            edgesR[i].push_back(j);
+            edgesR[i].insert(j);
         }
         else data[make_pair(i,j)].push_back(0); //Q
     }
     else data[make_pair(i,j)].push_back(-1); //P
 
-    edges[i].push_back(j);
+    edges[i].insert(j);
 
 }
 
@@ -340,17 +241,16 @@ void setDataAndEdge(ifstream &infile, int loop, bool isP){
     }
 }
 
-void algorithm(vector<set<int>> components, map<int,vector<int>> edges, deque<component> &components_data){
+void algorithm(vector<set<int>> components, map<int,set<int>> edges, deque<component> &components_data){
 
     for(auto const &comp : components){
         cout<<endl;
 
-        set<pair<int,int>> edge_leavesPQ; //Aristas de hojas que generan perdidas
         set<pair<int,int>> edge_leavesR; //Aristas de hojas que no generan perdidas
         set<int> leavesR; // belonged leaves to R
 
         //Obtenemos las hojas que perteneces a R y a QP
-        findEdgeLeaves(comp,edges,edge_leavesR,edge_leavesPQ,leavesR);
+        findLeaves(comp,edges,edge_leavesR,leavesR);
         //cout<<"EdgeLeaves R: ";
         //printSetOfPair(edge_leavesR);
         cout<<"Hojas: "; for(auto const &l : leavesR) cout<<l<<" "; cout<<endl;
@@ -409,14 +309,14 @@ int main(int argc, char const *argv[]) {
     cout << "nonrqdEdges = "<<nonRqdEdges<<endl;
     setDataAndEdge(infile, nonRqdEdges, true);
 
-    //printData();
+    //printData(data);
 
     /********* QR **********/
     vector<set<int>> componentsR;
     deque<component> components_data;
     cout << "\nComponentes conexas R --"<<endl;
     dfsComponents(edgesR,componentsR);
-    printConnectComponents(componentsR);
+    printConnectedComponent(componentsR);
     algorithm(componentsR, edgesR,components_data);
     //printComponents(components_data);
 

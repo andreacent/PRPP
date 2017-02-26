@@ -242,15 +242,16 @@ void setDataAndEdge(ifstream &infile, int loop, bool isP){
 //vertices: hojas de todos menos mi componente conexa
 //Veo adyacencias de vertice origen
 //Retorno Arista y Componente
-int Discover_connections(int s,map<int,set<int>> edges, deque<component> components){
-    int max = 0, v = -1;
+pair<int,int> Discover_connections(int s,map<int,set<int>> edges, deque<component> components){
+    int total, max = 0, v = -1;
 
     for(auto const &c : components){
         for(auto const &l : c.leaves){
 
             //Si existe conexion
             if((int)edges[l].count(s)){
-                total = c.benefit +(data[(l,s)][1] - 2*data[(l,s)][0]);
+                pair<int,int> ls;
+                total = c.benefit +(data[ls][1] - 2*data[ls][0]);
                 if (total>max){
                     max = total;
                     v = l;
@@ -267,35 +268,46 @@ int Discover_connections(int s,map<int,set<int>> edges, deque<component> compone
 //sumamos las ganancias 
 //borramos del deque la componente[i] --- componente.erase(componente.begin()+i);
 void join_byleaves(int i,int j, deque<component> components){
-
+    int t = 0;
     for (auto const &c : components) {
 
         if(c.leaves.count(j)){
-            //remove leave from c
+
+            //join vertices
+            components[0].vertices.insert(c.vertices.begin(), c.vertices.end());
+
+            //join leaves
+            components[0].leaves.insert(c.leaves.begin(), c.leaves.end());
 
             //remove leave from 0
+            components[0].leaves.erase(j);
 
-            //join components
+            //Update benefit
+            components[0].benefit += c.benefit;
 
             //remove component c
-            
+            components.erase(components.begin()+t);
+            break;
+
         }
+        t++;
     }
 }
 
-int Connect(deque<component> &components, set<int>> edges){
+int Connect(deque<component> &components, map<int,set<int>> edges){
     set<int> not0_leaves;
-
+    pair<int,int> max_j;
     //Itero sobre hojas de componente[0]
     for (auto const &i: components[0].leaves){
-        <max,j> = Discover_connections(i, edges, components);
-        if (max > 0){
+        max_j = Discover_connections(i, edges, components);
+        if (max_j.first > 0){
             //Uno componentes
-            join_byleaves(i, j, components);
+            join_byleaves(i, max_j.second, components);
             //Agregar arista (i , j) a edgesR -- (i,j) y (j,i)
-            add_edge(i,j, edges);
+            //add_edge(i,j, edges);
         }
     }
+    return -1;
 
 }
 

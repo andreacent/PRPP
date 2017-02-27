@@ -7,7 +7,7 @@
 #include "header.h"
     
 /* Print map of edges */
-void printEdgesMap(map<int, vector<int>> e){
+void printEdgesMap(map<int, set<int>> e){
     for (auto const &f : e) {
         cout<<"Nodo "<< f.first << ":";
         for(auto const &s : f.second){

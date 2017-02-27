@@ -176,56 +176,83 @@ int dijkstra(   int s,
     return sum;
 }
 
-int kruskal(set<int> components,
+int kruskal(component component,
             map<int, set<int>> edges, 
             set<pair<int,int>> &edge_path,
             deque<deque<int>> &paths){ 
-
     priority_queue<edgeCost,vector<edgeCost>,CompareBenefit> edge_cost; //aristas por orden de beneficio
+    deque<set<int>> sets;
     int sum =0;
+    cout<<"tamano de component "<<component.vertices.size()<<endl;
 
-    for(auto const &c : components){
+    for(auto const &c : component.vertices){
+
+        cout<<"ENTRA";
+
+        set<int> set_c = {c};
+        sets.push_back(set_c);
         for(auto const &v : edges[c]){
-            edgeCost ec;
-            ec.edge = {c,v};
-            ec.cost = data[ec.edge][1] - data[ec.edge][0];
-            edge_cost.push(ec);
+
+            if(component.vertices.count(v)){
+                edgeCost ec;
+                ec.edge = {c,v};
+                ec.cost = data[ec.edge][1] - data[ec.edge][0];
+                edge_cost.push(ec);
+            }
         }
     }
-    
+
+    cout<<"ya tengo la cola";
     while(!edge_cost.empty()){
         edgeCost edc = edge_cost.top();
         edge_cost.pop();
 
-        if( edge_path.count(edc.edge) > 0 || edge_path.count(make_pair(edc.edge.second,edc.edge.first)) > 0) continue; //no repetir arista dirigida
-        
-        //CREO EL ARBOL
+        if( edge_path.count(edc.edge) > 0 || edge_path.count(make_pair(edc.edge.second,edc.edge.first)) > 0) continue; //no repetir arista no-dirigida
+
+        int i,j;
+        //obtener conjunto de edc.edge.first
+        for(i=0; i<(int)sets.size(); i++){
+            if(sets[i].count(edc.edge.first)) break;
+        }
+        //obtener conjunto de edc.edge.second
+        for(j=0; j<(int)sets.size(); i++){
+            if(sets[j].count(edc.edge.second)) break;
+        }
+
+        if( i==j ) continue; //si estan en el mismo conjunto, no hago nada
+
+        edge_path.insert(edc.edge); //agrego arista al camino
+        sum+=edc.cost; //sumo el beneficio
+
+        //uno el conjunto j a i
+        sets[i].insert(sets[j].begin(), sets[j].end());
+        //elimino el conjunto de j
+        sets.erase(sets.begin()+j);
+
+        //camino
         bool back = true;
         int element;
-        unsigned i=0;
-        for(i=0;i<paths.size();i++){
-            if(paths[i].back() == edc.edge.first){
+        unsigned k=0;
+        for(k=0;k<paths.size();k++){
+            if(paths[k].back() == edc.edge.first){
                 element = edc.edge.second;
                 break;
-            }else if(paths[i].front() == edc.edge.first){
+            }else if(paths[k].front() == edc.edge.first){
                 element = edc.edge.second;
                 back = false;
                 break;
-            }else if(paths[i].back() == edc.edge.second){
+            }else if(paths[k].back() == edc.edge.second){
                 element = edc.edge.first;
                 break;
-            }else if(paths[i].front() == edc.edge.second){
+            }else if(paths[k].front() == edc.edge.second){
                 element = edc.edge.first;
                 back = false;
                 break;
             }
         }
-        if(i == paths.size()) paths.push_back({edc.edge.first,edc.edge.second});
-        else if(back) paths[i].push_back(element);
-        else paths[i].push_front(element);
-
-        edge_path.insert(edc.edge);
-        sum+=edc.cost;
+        if(k == paths.size()) paths.push_back({edc.edge.first,edc.edge.second});
+        else if(back) paths[k].push_back(element);
+        else paths[k].push_front(element);
     } 
 
     //while(fixPaths(paths));
@@ -377,14 +404,19 @@ void algorithm( map<int,set<int>> &edges,
     //calculamos las componentes conexas con su informacion
     dfsComponents(edges,components);
     printConnectedComponents(components);
+
     //unimos las componentes que convengan
     connect(components,edges,all_edges);
     printComponent(components.front());
 
+    //cout<<"Edges: "<<endl;
+    //printEdgesMap(edges);
+
     //deque<path> paths_data;
     deque<deque<int>> paths;
     set<pair<int,int>> edge_path; // edges of actual path
-    int benefit = dijkstra(*components[0].vertices.begin(),edges,edge_path,paths);
+    //int benefit = dijkstra(*components[0].vertices.begin(),edges,edge_path,paths);
+    int benefit = kruskal(components.front(), edges, edge_path, paths);
 
     cout<<"PATH: "; printSetOfPair(edge_path);
     cout<<"Beneficio = "<<benefit<<endl;
@@ -439,6 +471,6 @@ int main(int argc, char const *argv[]) {
     cout << "\nComponentes conexas RQ"<<endl;
     algorithm(edgesRQ, edges);
     */
-    
+
     return 0;
 }

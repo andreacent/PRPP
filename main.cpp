@@ -397,25 +397,28 @@ void connect(deque<component> &components,
     cout << "Joined "<< j <<" leaves"<<endl;
 }
 
-int go_Deposit(int l, component &component0,map<int,set<int>> &edges, set<pair<int,int>> &edge_path, deque<int> &path){
-    int max,ve,costo,benefit;
+pair <int,int> go_Deposit(int l, component &component0,map<int,set<int>> &edges, set<pair<int,int>> &edge_path, deque<int> &path){
+    int max,ve,costo;
+    pair<int,int>benefit;
+    pair<int,int>benefit_t;
     max = -999999;
-    benefit=0;
+    benefit=make_pair(0,0);
     for(auto const &v : component0.vertices){
         if (v != l && l !=0){
             if((int)edges[l].count(v)){
                 if (v == 0){
                     if ((int)edge_path.count(make_pair(l,v)) || (int)edge_path.count(make_pair(v,l))){
-                        benefit += data[make_pair(l,v)][1] - 2*data[make_pair(l,v)][0];
+                        benefit.first += data[make_pair(l,v)][1] - 2*data[make_pair(l,v)][0];
                     }
                     else{
-                        benefit = data[make_pair(l,v)][1]- data[make_pair(l,v)][0];
+                        benefit.first += data[make_pair(l,v)][1]- data[make_pair(l,v)][0];
                     }
                     edge_path.insert(make_pair(l,0));
                     edge_path.insert(make_pair(0,l));
                     path.push_back(l);
                     path.push_back(0);
-                    return benefit;
+                    benefit.second = -1;
+                    break;
                 }
                 if ((int)edge_path.count(make_pair(l,v)) || (int)edge_path.count(make_pair(v,l))){
                     costo = data[make_pair(l,v)][1] - 2*data[make_pair(l,v)][0];
@@ -431,13 +434,18 @@ int go_Deposit(int l, component &component0,map<int,set<int>> &edges, set<pair<i
                         ve = v;
                     }
                 }
-            benefit += max;
-            edges[l].erase(ve);
+            benefit.first += max;
             edges[ve].erase(l);
             edge_path.insert(make_pair(l,ve));
             edge_path.insert(make_pair(ve,l));
             path.push_back(l);
-            benefit += go_Deposit(ve, component0, edges, edge_path, path);
+            benefit_t = go_Deposit(ve, component0, edges, edge_path, path);
+            benefit.first += benefit_t.first;
+            benefit.second = benefit_t.second;
+
+            if (benefit.second == -1){
+                break;
+            }
             }
         }
     }
@@ -447,14 +455,16 @@ int go_Deposit(int l, component &component0,map<int,set<int>> &edges, set<pair<i
 }
 
 int wayBack(deque<component> &components, map<int,set<int>> &edges, set<pair<int,int>> &edge_path,deque<deque<int>> &paths){
-    int benefit = 0,c=0;
+    pair<int,int>benefit;
+    int c=0;
+    benefit=make_pair(0,0);
     for(auto const &l : components[0].leaves){
         deque<int> leave_path;
         paths.push_back(leave_path);
-        benefit+=go_Deposit(l, components[0], edges, edge_path, paths[c]);
+        benefit=go_Deposit(l, components[0], edges, edge_path, paths[c]);
         c++;
     }
-    return benefit;
+    return benefit.first;
 
 }
 void algorithm( map<int,set<int>> &edges, 

@@ -7,6 +7,9 @@
 #include "print.h"
 #include <algorithm>
 
+#include <ctime>
+#include <csignal>
+
 map<int, set<int>> edges; //Adjacency list
 map<int, set<int>> edgesRQ; //Adjacency list RQ set
 map<int, set<int>> edgesR; //Adjacency list R set
@@ -515,9 +518,15 @@ void algorithm( map<int,set<int>> &edges,
     ofstream myfile;
     myfile.open (filename+"-salida.txt");
     myfile << benefit<<".\n";
+    for(auto const &p : paths2){
+        for(int l = p.size()-1; l >= 0 ; l--){
+            myfile<<p[l]+1<<" "; 
+        }
+        myfile<<endl;
+    }
     for(auto const &p : paths){
         for(auto const &v : p){
-            myfile<<v<<" "; 
+            myfile<<v+1<<" "; 
         }
         myfile<<endl;
     }
@@ -560,9 +569,17 @@ int main(int argc, char const *argv[]) {
 
     //printData(data);
 
+    float inicio, fin, t;
+    inicio=clock();
     /********* R **********/
     cout << "\nComponentes conexas R"<<endl;
-    algorithm(edgesR, edges,filename);
+    pair<int,int> tito = {0,*edges[0].begin()};
+    if(data[tito][2] == 1) algorithm(edgesR, edges,filename);
+    else if(data[tito][2] == 0) algorithm(edgesRQ, edges,filename);
+    else if(data[tito][2] == -1) algorithm(edgesRQ, edges,filename);
+    fin=clock();
+    t=fin-inicio;
+    printf("\nEl tiempo de proseso es: %f\n",t);
 
     /********* QR *********
     cout << "\nComponentes conexas RQ"<<endl;

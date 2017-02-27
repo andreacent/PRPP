@@ -274,7 +274,7 @@ void connect(deque<component> &components,
                         inserter(leaves, leaves.begin()));
 
     }
-    cout << "Joined "<< j <<" leaves"<<endl;
+    //cout << "Joined "<< j <<" leaves"<<endl;
 }
 
 pair <int,int> go_Deposit(int l, component &component0,map<int,set<int>> &edges, set<pair<int,int>> &edge_path, deque<int> &path){
@@ -350,9 +350,7 @@ int wayBack(deque<component> &components, map<int,set<int>> &edges, set<pair<int
 void algorithm( map<int,set<int>> &edges, 
                 map<int,set<int>> all_edges,
                 string filename){
-    cout << "\n\n\n\n entre algo \n\n\n\n";
-    pair<int,int> tito = {0,*edges[0].begin()};
-
+    //cout << "\n\n\n\n entre algo \n\n\n\n";
 
     deque<component> components;
 
@@ -362,7 +360,7 @@ void algorithm( map<int,set<int>> &edges,
         comp.insert(0);
         components.push_front({comp,{0},0});
     }
-    printConnectedComponents(components);
+    //printConnectedComponents(components);
 
     //unimos las componentes que convengan
     connect(components,edges,all_edges);

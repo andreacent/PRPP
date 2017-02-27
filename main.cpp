@@ -24,20 +24,32 @@ bool isInSet(deque<component> c,int vertice){
 /*Function used by dfsComponents*/
 void getComponents( int v, int i,
                     map<int, set<int>> edges,
-                    deque<component> &components){
+                    deque<component> &components,
+                    set<pair<int,int>> &edges_comp){
     for(auto const &s : edges[v]){
-        pair<int,int> ec = {v,s};
-        bool is_leaf = (int)edges[s].size() == 1;
-        if((int)components.size() <= i){
+        pair<int,int> ec = {v,s}; //arista
+        bool is_leaf = (int)edges[s].size() == 1; //llega a una hoja?
+
+        if((int)components.size() <= i){//creo la componente si no existe
             set<int> comp = {s};
+            edges_comp.insert(ec);
+
             if(is_leaf) components.push_back({comp,{s},data[ec][1] - data[ec][0]});
             else components.push_back({comp,{},data[ec][1] - data[ec][0]});
-            getComponents(s,i,edges,components);
-        }else if(!components[i].vertices.count(s)){
+
+            getComponents(s,i,edges,components,edges_comp);
+        }
+        else if(!components[i].vertices.count(s)){//agrego a una componente existente
             components[i].vertices.insert(s);
-            components[i].benefit += data[ec][1] - data[ec][0];
+
             if(is_leaf) components[i].leaves.insert(s);
-            getComponents(s,i,edges,components);
+
+            if(!edges_comp.count(ec) && !edges_comp.count(make_pair(s,v))) 
+                components[i].benefit += data[ec][1] - data[ec][0]; //si la arista no ha sido agregada a la componente, sumo su beneficio
+
+            edges_comp.insert(ec);
+
+            getComponents(s,i,edges,components,edges_comp);
         }
     }
 }
@@ -46,10 +58,12 @@ void getComponents( int v, int i,
 void dfsComponents( map<int, set<int>> edges,
                     deque<component> &components){ 
     int i =0;
+    set<pair<int,int>> edges_comp; //aristas de la componente
     for (auto const &s : edges) {
         if(!isInSet(components,s.first)){ 
-            getComponents(s.first,i,edges,components);
+            getComponents(s.first,i,edges,components,edges_comp);
             i++;
+            edges_comp.clear(); //limpio el conjunto de aristas 
         }
     }
 }
@@ -260,19 +274,19 @@ void setDataAndEdge(ifstream &infile, int loop, bool isP){
 
 
 //s: Hoja origen de la componente[0]
-//edges: conjunto de aristas de PQR
+//all_edges: conjunto de aristas de PQR
 //vertices: hojas de todos menos mi componente conexa
 //Veo adyacencias de vertice origen
 //Retorno Arista y Componente
-pair<int,int> discoverConnections(int s,map<int,set<int>> edges, deque<component> components){
+pair<int,int> discoverConnections(int s,map<int,set<int>> all_edges, deque<component> components){
     int total, max = 0, v = -1;
 
     for (int i=1; i<(int)components.size(); i++){
         for(auto const &l : components[i].leaves){
 
             //Si existe conexion
-            if((int)edges[l].count(s)){
-                pair<int,int> ls = make_pair(l,s);
+            if((int)all_edges[l].count(s)){
+                pair<int,int> ls = {l,s};
                 total = components[i].benefit +(data[ls][1] - 2*data[ls][0]);
                 if (total>max){
                     max = total;
@@ -303,7 +317,6 @@ void join_byleaves(int i,int j, deque<component> &components){
             //remove leave from i from 0
             components[0].leaves.erase(i);
 
-
             //remove leave from j from 0
             components[0].leaves.erase(j);
 
@@ -319,7 +332,9 @@ void join_byleaves(int i,int j, deque<component> &components){
     }
 }
 
-int connect(deque<component> &components, map<int,set<int>> edges){
+void connect(deque<component> &components, 
+            map<int, set<int>> &edges, 
+            map<int,set<int>> all_edges){
     set<int> leaves;
     set<int> visited_leaves;
     pair<int,int> max_j;
@@ -330,7 +345,7 @@ int connect(deque<component> &components, map<int,set<int>> edges){
     //for (int x= 0; x<4; x++){
     while (!leaves.empty()){
         it = leaves.begin();
-        max_j = discoverConnections(*it, edges, components);
+        max_j = discoverConnections(*it, all_edges, components);
 
         if (max_j.first > 0){
             j++;
@@ -342,8 +357,8 @@ int connect(deque<component> &components, map<int,set<int>> edges){
             edges[*it].insert(max_j.second);
             //(j,i)
             edges[max_j.second].insert(*it);
-
         }
+
         visited_leaves.insert(*it);
 
         //Resta conjuntos leaves-visited_leaves
@@ -352,34 +367,33 @@ int connect(deque<component> &components, map<int,set<int>> edges){
                         inserter(leaves, leaves.begin()));
 
     }
-    cout << "\n\n\n\nJoined"<< j <<" leaves"<<endl;
-    return 0;
-
+    cout << "Joined "<< j <<" leaves"<<endl;
 }
 
-void algorithm(deque<component> components, map<int,set<int>> edges, deque<path> &paths_data, map<int,set<int>> alledges){
+void algorithm( map<int,set<int>> &edges, 
+                map<int,set<int>> all_edges){
 
-    for(auto const &comp : components){
-        cout<<endl;
+    deque<component> components;
+    //calculamos las componentes conexas con su informacion
+    dfsComponents(edges,components);
+    printConnectedComponents(components);
+    //unimos las componentes que convengan
+    connect(components,edges,all_edges);
+    printComponent(components.front());
 
-        set<pair<int,int>> edge_path; // edges of actual path
-        int benefit; // path benefit 
-        deque<deque<int>> paths;
+    //deque<path> paths_data;
+    deque<deque<int>> paths;
+    set<pair<int,int>> edge_path; // edges of actual path
+    int benefit = dijkstra(*components[0].vertices.begin(),edges,edge_path,paths);
 
-        //Corremos dijkstra para obtener el arbol de maximo beneficio
-        benefit = dijkstra(*comp.vertices.begin(),edges,edge_path,paths);
-        paths_data.push_back({edge_path,comp.leaves,benefit});  
-        //benefit = kruskal(comp,edges,edge_path,paths); 
-
-        cout<<"PATH: "; printSetOfPair(edge_path);
-        cout<<"Beneficio = "<<benefit<<endl;
-        cout<<"Caminos: \n"; 
-        for(auto const &p : paths){
-            for(auto const &v : p){
-                cout<<v<<" "; 
-            }
-            cout<<endl;
+    cout<<"PATH: "; printSetOfPair(edge_path);
+    cout<<"Beneficio = "<<benefit<<endl;
+    cout<<"Caminos: \n"; 
+    for(auto const &p : paths){
+        for(auto const &v : p){
+            cout<<v<<" "; 
         }
+        cout<<endl;
     }
 }
 
@@ -417,27 +431,14 @@ int main(int argc, char const *argv[]) {
 
     //printData(data);
 
-    /********* QR *********
-    deque<component> componentsRQ;
-    deque<path> paths_data;
-    cout << "\nComponentes conexas R --"<<endl;
-    dfsComponents(edgesRQ,componentsRQ);
-    printConnectedComponent(componentsRQ);
-    algorithm(componentsRQ, edgesRQ,paths_data,edges);
-    //printComponents(paths_data);
-    */
-
     /********* R **********/
-    deque<component> componentsR;
-    deque<path> paths_data;
-    cout << "\nComponentes conexas R --"<<endl;
-    dfsComponents(edgesR,componentsR);
-    printConnectedComponent(componentsR);
-    algorithm(componentsR, edgesR,paths_data,edges);
+    cout << "\nComponentes conexas R"<<endl;
+    algorithm(edgesR, edges);
 
-    connect(componentsR, edges);
-    printConnectedComponent(componentsR);
-    //printComponents(paths_data);
-
+    /********* QR *********
+    cout << "\nComponentes conexas RQ"<<endl;
+    algorithm(edgesRQ, edges);
+    */
+    
     return 0;
 }

@@ -397,8 +397,69 @@ void connect(deque<component> &components,
     cout << "Joined "<< j <<" leaves"<<endl;
 }
 
+int go_Deposit(int l, component &component0,map<int,set<int>> &edges, set<pair<int,int>> &edge_path, deque<int> &path){
+    int max,ve,costo,benefit;
+    max = -999999;
+    benefit=0;
+    for(auto const &v : component0.vertices){
+        if (v != l && l !=0){
+            if((int)edges[l].count(v)){
+                if (v == 0){
+                    if ((int)edge_path.count(make_pair(l,v)) || (int)edge_path.count(make_pair(v,l))){
+                        benefit += data[make_pair(l,v)][1] - 2*data[make_pair(l,v)][0];
+                    }
+                    else{
+                        benefit = data[make_pair(l,v)][1]- data[make_pair(l,v)][0];
+                    }
+                    edge_path.insert(make_pair(l,0));
+                    edge_path.insert(make_pair(0,l));
+                    path.push_back(l);
+                    path.push_back(0);
+                    return benefit;
+                }
+                if ((int)edge_path.count(make_pair(l,v)) || (int)edge_path.count(make_pair(v,l))){
+                    costo = data[make_pair(l,v)][1] - 2*data[make_pair(l,v)][0];
+                    if (max < costo){
+                        max = costo;
+                        ve = v;
+                    }
+                }
+                else{
+                    costo = data[make_pair(l,v)][1] - data[make_pair(l,v)][0];
+                    if (max < costo){
+                        max = costo;
+                        ve = v;
+                    }
+                }
+            benefit += max;
+            edges[l].erase(ve);
+            edges[ve].erase(l);
+            edge_path.insert(make_pair(l,ve));
+            edge_path.insert(make_pair(ve,l));
+            path.push_back(l);
+            benefit += go_Deposit(ve, component0, edges, edge_path, path);
+            }
+        }
+    }
+    return benefit;
+
+
+}
+
+int wayBack(deque<component> &components, map<int,set<int>> &edges, set<pair<int,int>> &edge_path,deque<deque<int>> &paths){
+    int benefit = 0,c=0;
+    for(auto const &l : components[0].leaves){
+        deque<int> leave_path;
+        paths.push_back(leave_path);
+        benefit+=go_Deposit(l, components[0], edges, edge_path, paths[c]);
+        c++;
+    }
+    return benefit;
+
+}
 void algorithm( map<int,set<int>> &edges, 
-                map<int,set<int>> all_edges){
+                map<int,set<int>> all_edges,
+                string filename){
 
     deque<component> components;
     //calculamos las componentes conexas con su informacion
@@ -415,8 +476,8 @@ void algorithm( map<int,set<int>> &edges,
     //deque<path> paths_data;
     deque<deque<int>> paths;
     set<pair<int,int>> edge_path; // edges of actual path
-    //int benefit = dijkstra(*components[0].vertices.begin(),edges,edge_path,paths);
-    int benefit = kruskal(components.front(), edges, edge_path, paths);
+    int benefit = dijkstra(*components[0].vertices.begin(),edges,edge_path,paths);
+    //int benefit = kruskal(components.front(), edges, edge_path, paths);
 
     cout<<"PATH: "; printSetOfPair(edge_path);
     cout<<"Beneficio = "<<benefit<<endl;
@@ -427,6 +488,30 @@ void algorithm( map<int,set<int>> &edges,
         }
         cout<<endl;
     }
+
+    deque<deque<int>> paths2;
+    int backbenefit = wayBack(components,edges, edge_path, paths2);
+    cout<<"PATH: "; printSetOfPair(edge_path);
+    cout<<"backbenefit = "<<backbenefit<<endl;
+    benefit += backbenefit;
+    cout<<"BackCaminos: \n"; 
+    for(auto const &p : paths2){
+        for(auto const &v : p){
+            cout<<v<<" "; 
+        }
+        cout<<endl;
+    }
+
+    ofstream myfile;
+    myfile.open (filename+"-salida.txt");
+    myfile << benefit<<".\n";
+    for(auto const &p : paths){
+        for(auto const &v : p){
+            myfile<<v<<" "; 
+        }
+        myfile<<endl;
+    }
+    myfile.close();
 }
 
 /*
@@ -434,6 +519,8 @@ argv[1] -> intance
 */
 int main(int argc, char const *argv[]) {
     int vertices,rqdEdges, nonRqdEdges;
+    string filecito = argv[1];
+    string filename = filecito.substr(0, filecito.find("."));
 
     if (argc < 2) { // Check the value of argc. If not enough parameters have been passed, inform user and exit.
         cout << "Usage is ./main <file> \n"; // Inform the user of how to use the program
@@ -465,7 +552,7 @@ int main(int argc, char const *argv[]) {
 
     /********* R **********/
     cout << "\nComponentes conexas R"<<endl;
-    algorithm(edgesR, edges);
+    algorithm(edgesR, edges,filename);
 
     /********* QR *********
     cout << "\nComponentes conexas RQ"<<endl;

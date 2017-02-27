@@ -5,11 +5,13 @@
 */
 
 #include "print.h"
+#include <algorithm>
 
 map<int, set<int>> edges; //Adjacency list
 map<int, set<int>> edgesRQ; //Adjacency list RQ set
 map<int, set<int>> edgesR; //Adjacency list R set
 map<pair<int, int>, vector<int>> data; //Edge data
+
 
 /*Return true if the vertice is in any set of the vector c*/
 bool isInSet(deque<component> c,int vertice){
@@ -111,7 +113,10 @@ int dijkstra(   int s,
         edgeCost edc = edge_cost.top();
         edge_cost.pop();
 
-        if( edge_path.count(edc.edge) > 0 || edge_path.count(make_pair(edc.edge.second,edc.edge.first)) > 0) continue; //no repetir arista dirigida
+        //no repetir arista dirigida
+        if( edge_path.count(edc.edge) > 0 || edge_path.count(make_pair(edc.edge.second,edc.edge.first)) > 0 ) continue; 
+        //las hojas, cuyas aristas no pertenecen al conjunto R, se ignoran
+        if( data[edc.edge][2] < 1 && (edges[edc.edge.first].size() == 1 || edges[edc.edge.second].size() == 1) ) continue;
         
         bool back = true;
         int element;
@@ -262,13 +267,13 @@ void setDataAndEdge(ifstream &infile, int loop, bool isP){
 pair<int,int> discoverConnections(int s,map<int,set<int>> edges, deque<component> components){
     int total, max = 0, v = -1;
 
-    for(auto const &c : components){
-        for(auto const &l : c.leaves){
+    for (int i=1; i<(int)components.size(); i++){
+        for(auto const &l : components[i].leaves){
 
             //Si existe conexion
             if((int)edges[l].count(s)){
-                pair<int,int> ls;
-                total = c.benefit +(data[ls][1] - 2*data[ls][0]);
+                pair<int,int> ls = make_pair(l,s);
+                total = components[i].benefit +(data[ls][1] - 2*data[ls][0]);
                 if (total>max){
                     max = total;
                     v = l;
@@ -284,23 +289,26 @@ pair<int,int> discoverConnections(int s,map<int,set<int>> edges, deque<component
 //unimos componente[0].leaves con componente[i].leaves
 //sumamos las ganancias 
 //borramos del deque la componente[i] --- componente.erase(componente.begin()+i);
-void join_byleaves(int i,int j, deque<component> components){
-    int t = 0;
-    for (auto const &c : components) {
+void join_byleaves(int i,int j, deque<component> &components){
+    int t = 1;
+    for (int k=1; k<(int)components.size(); k++) {
 
-        if(c.leaves.count(j)){
-
+        if(components[k].leaves.count(j)){
             //join vertices
-            components[0].vertices.insert(c.vertices.begin(), c.vertices.end());
+            components[0].vertices.insert(components[k].vertices.begin(), components[k].vertices.end());
 
             //join leaves
-            components[0].leaves.insert(c.leaves.begin(), c.leaves.end());
+            components[0].leaves.insert(components[k].leaves.begin(), components[k].leaves.end());
 
-            //remove leave from 0
+            //remove leave from i from 0
+            components[0].leaves.erase(i);
+
+
+            //remove leave from j from 0
             components[0].leaves.erase(j);
 
             //Update benefit
-            components[0].benefit += c.benefit;
+            components[0].benefit += components[k].benefit;
 
             //remove component c
             components.erase(components.begin()+t);
@@ -316,14 +324,16 @@ int connect(deque<component> &components, map<int,set<int>> edges){
     set<int> visited_leaves;
     pair<int,int> max_j;
     set<int>::iterator it;
+    int j=0;
 
     leaves = components[0].leaves;
+    //for (int x= 0; x<4; x++){
     while (!leaves.empty()){
         it = leaves.begin();
         max_j = discoverConnections(*it, edges, components);
 
         if (max_j.first > 0){
-
+            j++;
             //Uno componentes
             join_byleaves(*it, max_j.second, components);
 
@@ -334,13 +344,15 @@ int connect(deque<component> &components, map<int,set<int>> edges){
             edges[max_j.second].insert(*it);
 
         }
-
-        //Visited leaves
         visited_leaves.insert(*it);
-        leaves = components[0].leaves;
+
         //Resta conjuntos leaves-visited_leaves
-        leaves.erase(visited_leaves.begin(), visited_leaves.end());
+        leaves.clear();
+        std::set_difference(components[0].leaves.begin(), components[0].leaves.end(), visited_leaves.begin(), visited_leaves.end(), 
+                        inserter(leaves, leaves.begin()));
+
     }
+    cout << "\n\n\n\nJoined"<< j <<" leaves"<<endl;
     return 0;
 
 }

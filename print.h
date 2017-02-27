@@ -62,3 +62,9 @@ void printSetOfPair(set<pair<int,int>> set_pair){
     for(auto const &p : set_pair) cout<<"("<<p.first<<","<<p.second<<") ";
     cout<<endl; 
 }
+
+/* Print set*/
+void printSet(set<int> set){
+    for(auto const &p : set) cout<<"("<<p<<") ";
+    cout<<endl; 
+}

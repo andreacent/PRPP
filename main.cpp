@@ -470,7 +470,8 @@ int wayBack(deque<component> &components, map<int,set<int>> &edges, set<pair<int
     return benefit.first;
 
 }
-void algorithm( map<int,set<int>> &edges, 
+
+int algorithm( map<int,set<int>> &edges, 
                 map<int,set<int>> all_edges,
                 string filename){
 
@@ -478,6 +479,8 @@ void algorithm( map<int,set<int>> &edges,
     //calculamos las componentes conexas con su informacion
     dfsComponents(edges,components);
     printConnectedComponents(components);
+
+    if(!components[0].vertices.count(0)) return 0;
 
     //unimos las componentes que convengan
     connect(components,edges,all_edges);
@@ -531,6 +534,8 @@ void algorithm( map<int,set<int>> &edges,
         myfile<<endl;
     }
     myfile.close();
+
+    return 1;
 }
 
 /*
@@ -569,17 +574,21 @@ int main(int argc, char const *argv[]) {
 
     //printData(data);
 
-    float inicio, fin, t;
-    inicio=clock();
+    unsigned t0, t1;
+    t0=clock();
     /********* R **********/
     cout << "\nComponentes conexas R"<<endl;
-    pair<int,int> tito = {0,*edges[0].begin()};
-    if(data[tito][2] == 1) algorithm(edgesR, edges,filename);
-    else if(data[tito][2] == 0) algorithm(edgesRQ, edges,filename);
-    else if(data[tito][2] == -1) algorithm(edgesRQ, edges,filename);
-    fin=clock();
-    t=fin-inicio;
-    printf("\nEl tiempo de proseso es: %f\n",t);
+
+    if(algorithm(edgesR, edges,filename) == 0){ 
+        if(algorithm(edgesRQ, edges,filename) == 0) 
+            algorithm(edges, edges,filename);
+    }
+    
+
+    t1 = clock();
+
+    double time = (double(t1-t0)/CLOCKS_PER_SEC);
+    cout << "Execution Time: " << time << endl;
 
     /********* QR *********
     cout << "\nComponentes conexas RQ"<<endl;

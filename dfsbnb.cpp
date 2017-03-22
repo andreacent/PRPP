@@ -26,8 +26,7 @@ bool cicloNegativo(edge ec, deque<edge> solParcial){
     int beneficio = ec.benefit - ec.cost;
     bool ciclo = false;
 
-    std::deque<edge>::iterator it = solParcial.begin();
-    while (it != solParcial.end()){
+    for (deque<edge>::iterator it = solParcial.begin(); it != solParcial.end(); ++it){
         //al encontrar un ciclo, calculo el beneficio desde 
         //donde se genera el ciclo hasta donde se cierra
         if(ciclo) beneficio += (*it).benefit - (*it).cost;
@@ -44,8 +43,7 @@ bool cicloNegativo(edge ec, deque<edge> solParcial){
 bool estaLadoEnSolParicial(edge ec, deque<edge> solParcial){
     int arista_count=0;
 
-    std::deque<edge>::iterator it = solParcial.begin();
-    while (it != solParcial.end())
+    for (deque<edge>::iterator it = solParcial.begin(); it != solParcial.end(); ++it)
         if( ec.coor == (*it).coor ||
             ( ec.coor.first == (*it).coor.second && 
               ec.coor.second == (*it).coor.first )
@@ -65,8 +63,7 @@ bool repiteCiclo(
         edge ec, 
         deque<edge> solParcial){
 
-    std::deque<edge>::iterator it = solParcial.begin();
-    while (it != solParcial.end())
+    for (deque<edge>::iterator it = solParcial.begin(); it != solParcial.end(); ++it)
         if( ec.coor.second ==  (*it).coor.first ){
             if(ec.benefit - ec.cost < (*it).benefit - (*it).cost)
                 return false;
@@ -86,8 +83,13 @@ bool cumpleAcotamiento(edge ec, int b_solParcial, int b_mejorSol, int b_disponib
 
 int beneficio(deque<edge> solucion){
     int total =0;
-    std::deque<edge>::iterator it = solucion.begin();
-    while (it != solucion.end()) total += (*it).benefit - (*it).cost;
+    if(solucion.empty()) return total;
+
+    for (deque<edge>::iterator it = solucion.begin(); it != solucion.end(); ++it){
+        cout<<endl;
+        cout<<(*it).coor.first<<","<<(*it).coor.second<<" beneficio "<<(*it).benefit<<" costo "<<(*it).cost;
+        total += (*it).benefit - (*it).cost;
+    }
     return total;
 }
 
@@ -101,6 +103,7 @@ void dfs(int v, //verticeMasExterno(solParcial);
     int b_solParcial = beneficio(solParcial);
     int b_mejorSol = beneficio(mejorSol);
 
+    cout<<v<<" ";
     // Vemos si se encuentra una mejor solucion factible
     if(v==0) //v==d
         if(b_solParcial > b_mejorSol){

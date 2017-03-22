@@ -22,7 +22,7 @@ void heuristicaAvida(
 	while(!t.empty()){
 		if(true){ // ∃(e ∈ T ∧ u ∈ V ) | e = (b, u)
 			edge e_bu = obtenerLado(t,b);
-			t.erase(e_bu);
+			//t.erase(e_bu);
 			solucion.push_back(e_bu);
 			b = e_bu.coor.second;
 		}else{

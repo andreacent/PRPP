@@ -60,13 +60,13 @@ int main(int argc, char const *argv[]) {
     string filecito = argv[1];
     string filename = filecito.substr(0, filecito.find("."));
 
-    if (argc < 3) { // Check the value of argc. If not enough parameters have been passed, inform user and exit.
-        cout << "Usage is ./main <file> <int>\n"; // Inform the user of how to use the program
+    if (argc < 2) { // Check the value of argc. If not enough parameters have been passed, inform user and exit.
+        cout << "Usage is ./main <file>\n"; // Inform the user of how to use the program
         exit(0);
     }
 
     /*****Read file to get data*****/
-    ifstream infile(argv[1]);
+    ifstream infile("instanciasPRPP/ALBAIDA/ALBAIDAANoRPP"); //ifstream infile(argv[1]);
     string line,token;
 
     //get number of vertices 
@@ -86,13 +86,35 @@ int main(int argc, char const *argv[]) {
     cout << "nonrqdEdges = "<<nonRqdEdges<<endl;
     setDataAndEdge(infile, nonRqdEdges, true);
 
-    //printData(data);
+    deque<edge> solParcial;
+    deque<edge> mejorSol; //SE DEBE OBTENER DEL ALGORITMO DEL PROYECTO1
+    int beneficioDisponible = 0; // NO ESTOY CLARA COMO SE DEBE INICIALIZAR
+
+    /* ELIMINAR */
+    deque<pair<int,int>> solAlbaidaA ={
+                {0,1},{1,7},{7,23},{23,33},{33,47},{47,41},
+                {41,49},{49,54},{54,55}}; 
+
+    deque<pair<int,int>> solAlbaidaAreturn ={{55,54},{54,49},
+                {49,41},{41,47},{47,33},{33,23},{23,7},{7,1},{1,0}};
+
+    deque<pair<int,int>>::iterator it;
+    for (it = solAlbaidaA.begin(); it != solAlbaidaA.end(); ++it){
+        edge e = {*it, data[e.coor][1], data[e.coor][0]};
+        mejorSol.push_back(e);
+    }
+
+    for (it = solAlbaidaAreturn.begin(); it != solAlbaidaAreturn.end(); ++it){ 
+        edge e = {*it, 0, data[e.coor][0]};
+        mejorSol.push_back(e);
+    }
+    /* ELIMINAR */
 
     unsigned t0, t1;
     t0=clock();
 
-    deque<edge> solParcial;
-    //dfs(0,solParcial,mejorSol,data,edges);
+    cout<<"vamos por el dfs"<<endl;
+    dfs(0,solParcial,mejorSol,data,edges,beneficioDisponible);
 
     t1 = clock();
     double time = (double(t1-t0)/CLOCKS_PER_SEC);

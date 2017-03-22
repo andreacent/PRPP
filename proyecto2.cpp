@@ -4,7 +4,7 @@
     Andrea Centeno  10-10138
 */
 
-#include "dfsbnb.cpp"
+#include "dfsbnb.h"
 #include <algorithm>
 #include <ctime>
 #include <csignal>
@@ -86,11 +86,8 @@ int main(int argc, char const *argv[]) {
     unsigned t0, t1;
     t0=clock();
 
-    deque<pair<int,int>> solParcial;
-    int mejorSol = stoi(argv[2]);// solInicial;
-    int beneficioDisponible ;// obtenerMaxBeneficio(G);
-    solParcial.push_back(1);
-    //def(0,solParcial,mejorSol,beneficioDisponible,data,edges);
+    deque<edge> solParcial;
+    //def(0,solParcial,mejorSol,data,edges);
 
     t1 = clock();
     double time = (double(t1-t0)/CLOCKS_PER_SEC);

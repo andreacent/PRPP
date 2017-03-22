@@ -41,7 +41,7 @@ public:
 };
 
 struct edge {
-  pair<int, int> pair;
+  pair<int, int> coor;
   int benefit;
   int cost;
 };

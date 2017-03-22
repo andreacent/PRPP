@@ -4,10 +4,14 @@
     Andrea Centeno  10-10138
 */
 
+#include "alg_avido.h"
 #include "dfsbnb.h"
-#include <algorithm>
 #include <ctime>
 #include <csignal>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
 
 map<int, set<int>> edges; //Adjacency list
 map<pair<int, int>, vector<int>> data; //Edge data
@@ -46,6 +50,7 @@ void setDataAndEdge(ifstream &infile, int loop, bool isP){
         insertData(j,i,c,b, isP);
     }
 }
+
 /*
 argv[1] -> intance
 argv[2] -> solucion optima
@@ -87,7 +92,7 @@ int main(int argc, char const *argv[]) {
     t0=clock();
 
     deque<edge> solParcial;
-    //def(0,solParcial,mejorSol,data,edges);
+    //dfs(0,solParcial,mejorSol,data,edges);
 
     t1 = clock();
     double time = (double(t1-t0)/CLOCKS_PER_SEC);

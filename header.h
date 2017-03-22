@@ -39,3 +39,17 @@ public:
         return false;
     }
 };
+
+struct edge {
+  pair<int, int> pair;
+  int benefit;
+  int cost;
+};
+
+class CompareEdges {
+public:
+    bool operator()(edge &e1, edge &e2) {
+        if (e1.benefit < e2.benefit) return true;
+        return false;
+    }
+};

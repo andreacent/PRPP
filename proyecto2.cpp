@@ -113,7 +113,6 @@ int main(int argc, char const *argv[]) {
     unsigned t0, t1;
     t0=clock();
 
-    cout<<"vamos por el dfs"<<endl;
     dfs(0,solParcial,mejorSol,data,edges,beneficioDisponible);
 
     t1 = clock();

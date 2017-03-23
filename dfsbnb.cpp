@@ -83,11 +83,9 @@ bool cumpleAcotamiento(edge ec, int b_solParcial, int b_mejorSol, int b_disponib
 
 int beneficio(deque<edge> solucion){
     int total =0;
-    if(solucion.empty()) return total;
 
     for (deque<edge>::iterator it = solucion.begin(); it != solucion.end(); ++it){
-        cout<<endl;
-        cout<<(*it).coor.first<<","<<(*it).coor.second<<" beneficio "<<(*it).benefit<<" costo "<<(*it).cost;
+        cout<<endl<<(*it).coor.first<<","<<(*it).coor.second<<" beneficio "<<(*it).benefit<<" costo "<<(*it).cost;
         total += (*it).benefit - (*it).cost;
     }
     return total;

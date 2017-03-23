@@ -12,28 +12,33 @@
     
 using namespace std;
 
+void buscarAristaConD(
+        int v,
+        edge &edge, 
+        map<pair<int, int>, vector<int>> data,
+        set<int> adyacentes);
+
 void obtenerListaDeSucesores(
         int v,
         priority_queue<edge,vector<edge>,CompareEdges> &l,
         map<pair<int, int>, vector<int>> data,
         set<int> adyacentes);
 
-bool cicloNegativo(edge ec, deque<edge> solParcial);
+bool cicloNegativo(edge ec, vector<edge> solParcial);
 
-bool estaLadoEnSolParicial(edge ec, deque<edge> solParcial);
+bool estaLadoEnSolParicial(edge ec, vector<edge> solParcial);
 
 bool repiteCiclo(
         priority_queue<edge,vector<edge>,CompareEdges> l,
         edge ec, 
-        deque<edge> solParcial);
+        vector<edge> solParcial);
 
 bool cumpleAcotamiento(edge ec, int b_solParcial, int b_mejorSol, int b_disponible);
 
-int beneficio(deque<edge> solucion);
+int beneficio(vector<edge> solucion);
 
-void dfs(int v, //verticeMasExterno(solParcial);
-         deque<edge> &solParcial, 
-         deque<edge> &mejorSol, 
+void dfs(vector<edge> &solParcial, 
+         vector<edge> &mejorSol, 
          map<pair<int, int>, vector<int>> data,
          map<int, set<int>> edges,
          int &beneficioDisponible);

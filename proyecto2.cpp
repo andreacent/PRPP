@@ -14,6 +14,7 @@
 #include <string>
 
 map<int, set<int>> edges; //Adjacency list
+map<int, set<int>> edgesRQ; //Adjacency list RQ set
 map<pair<int, int>, vector<int>> data; //Edge data
 
 /* LECTURA DE ARCHIVO */
@@ -22,6 +23,7 @@ void insertData(int i,int j, int c,int b, bool isP){
     data[make_pair(i,j)].push_back(b);
     //is P, R or Q
     if(!isP){
+        edgesRQ[i].insert(j);
         if(c*2 <= b) data[make_pair(i,j)].push_back(1); //R
         else data[make_pair(i,j)].push_back(0); //Q
     }
@@ -48,6 +50,17 @@ void setDataAndEdge(ifstream &infile, int loop, bool isP){
 
         insertData(i,j,c,b, isP);
         insertData(j,i,c,b, isP);
+    }
+}
+
+/* Print map of edges */
+void printEdgesMap(map<int, set<int>> e){
+    for (auto const &f : e) {
+        cout<<"Nodo "<< f.first << ":";
+        for(auto const &s : f.second){
+            cout<<" "<< s;
+        }
+        cout<<endl;
     }
 }
 
@@ -86,8 +99,10 @@ int main(int argc, char const *argv[]) {
     cout << "nonrqdEdges = "<<nonRqdEdges<<endl;
     setDataAndEdge(infile, nonRqdEdges, true);
 
-    deque<edge> solParcial;
-    deque<edge> mejorSol; //SE DEBE OBTENER DEL ALGORITMO DEL PROYECTO1
+    printEdgesMap(edges);
+
+    vector<edge> solParcial;
+    vector<edge> mejorSol; //SE DEBE OBTENER DEL ALGORITMO DEL PROYECTO1
     int beneficioDisponible = 0; // NO ESTOY CLARA COMO SE DEBE INICIALIZAR
 
     /* ELIMINAR */
@@ -113,9 +128,13 @@ int main(int argc, char const *argv[]) {
     unsigned t0, t1;
     t0=clock();
 
-    dfs(0,solParcial,mejorSol,data,edges,beneficioDisponible);
+    edge e;
+    buscarAristaConD(0,e,data,edges[0]);
+    solParcial.push_back(e);
+    dfs(solParcial,mejorSol,data,edges,beneficioDisponible);
 
     t1 = clock();
+
     double time = (double(t1-t0)/CLOCKS_PER_SEC);
     cout << "Execution Time: " << time << endl;
 

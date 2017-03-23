@@ -12,7 +12,7 @@ void obtenerListaDeSucesores(
         map<pair<int, int>, vector<int>> data,
         set<int> adyacentes){
 
-    std::set<int>::iterator it;
+    set<int>::iterator it;
     for (it = adyacentes.begin(); it != adyacentes.end(); ++it){
         edge ec = {{v,*it}, data[ec.coor][1], data[ec.coor][0]};
         l.push(ec);
@@ -22,11 +22,33 @@ void obtenerListaDeSucesores(
     }
 }
 
-bool cicloNegativo(edge ec, deque<edge> solParcial){
+void buscarAristaConD(
+        int v,
+        edge &edge, 
+        map<pair<int, int>, vector<int>> data,
+        set<int> adyacentes){
+
+    set<int>::iterator it = adyacentes.begin();
+    pair<int,int> e = {v,*it};
+    int e_beneficio = data[e][1] - data[e][0];
+    edge = {e,data[e][1], data[e][0]};
+    ++it;
+
+    while (it != adyacentes.end()){
+        e = {v,*it};
+        if(data[e][1] - data[e][0] > e_beneficio){
+            e_beneficio = data[e][1] - data[e][0];
+            edge = {e,data[e][1], data[e][0]};
+        }
+        ++it;
+    }
+}
+
+bool cicloNegativo(edge ec, vector<edge> solParcial){
     int beneficio = ec.benefit - ec.cost;
     bool ciclo = false;
 
-    for (deque<edge>::iterator it = solParcial.begin(); it != solParcial.end(); ++it){
+    for(vector<edge>::iterator it = solParcial.begin(); it != solParcial.end(); ++it){
         //al encontrar un ciclo, calculo el beneficio desde 
         //donde se genera el ciclo hasta donde se cierra
         if(ciclo) beneficio += (*it).benefit - (*it).cost;
@@ -37,19 +59,20 @@ bool cicloNegativo(edge ec, deque<edge> solParcial){
     }
 
     if(ciclo && beneficio < 0) return true;
+
     return false;
 }
 
-bool estaLadoEnSolParicial(edge ec, deque<edge> solParcial){
+bool estaLadoEnSolParicial(edge ec, vector<edge> solParcial){
     int arista_count=0;
 
-    for (deque<edge>::iterator it = solParcial.begin(); it != solParcial.end(); ++it)
+    for (vector<edge>::iterator it = solParcial.begin(); it != solParcial.end(); ++it)
         if( ec.coor == (*it).coor ||
             ( ec.coor.first == (*it).coor.second && 
               ec.coor.second == (*it).coor.first )
           ) arista_count++;
 
-    if (!arista_count) return false;
+    if (arista_count == 0) return false;
     else if (arista_count == 1){
        if (ec.benefit == 0) return false;
        else return true;
@@ -61,9 +84,9 @@ bool estaLadoEnSolParicial(edge ec, deque<edge> solParcial){
 bool repiteCiclo(
         priority_queue<edge,vector<edge>,CompareEdges> l,
         edge ec, 
-        deque<edge> solParcial){
+        vector<edge> solParcial){
 
-    for (deque<edge>::iterator it = solParcial.begin(); it != solParcial.end(); ++it)
+    for (vector<edge>::iterator it = solParcial.begin(); it != solParcial.end(); ++it)
         if( ec.coor.second ==  (*it).coor.first ){
             if(ec.benefit - ec.cost < (*it).benefit - (*it).cost)
                 return false;
@@ -81,27 +104,24 @@ bool cumpleAcotamiento(edge ec, int b_solParcial, int b_mejorSol, int b_disponib
     return true;
 }
 
-int beneficio(deque<edge> solucion){
+int beneficio(vector<edge> solucion){
     int total =0;
 
-    for (deque<edge>::iterator it = solucion.begin(); it != solucion.end(); ++it){
-        cout<<endl<<(*it).coor.first<<","<<(*it).coor.second<<" beneficio "<<(*it).benefit<<" costo "<<(*it).cost;
+    for (vector<edge>::iterator it = solucion.begin(); it != solucion.end(); ++it)
         total += (*it).benefit - (*it).cost;
-    }
     return total;
 }
 
-void dfs(int v, //verticeMasExterno(solParcial);
-         deque<edge> &solParcial, 
-         deque<edge> &mejorSol, 
+void dfs(vector<edge> &solParcial, 
+         vector<edge> &mejorSol, 
          map<pair<int, int>, vector<int>> data,
          map<int, set<int>> edges,
          int &beneficioDisponible){
 
+    int v = solParcial.back().coor.second;
     int b_solParcial = beneficio(solParcial);
     int b_mejorSol = beneficio(mejorSol);
 
-    cout<<v<<" ";
     // Vemos si se encuentra una mejor solucion factible
     if(v==0) //v==d
         if(b_solParcial > b_mejorSol){
@@ -113,22 +133,29 @@ void dfs(int v, //verticeMasExterno(solParcial);
     priority_queue<edge,vector<edge>,CompareEdges> l;
     obtenerListaDeSucesores(v,l,data,edges[v]); 
 
-    edge e;
     while(!l.empty()){
-        e = l.top();
+        edge e = l.top();
         l.pop();
+
+        cout<<"("<<e.coor.first<<","<<e.coor.second<<") b = "<<e.benefit<<" c = "<<e.cost<<endl;
+
         if(!cicloNegativo(e,solParcial) && 
            !estaLadoEnSolParicial(e,solParcial) &&
            !repiteCiclo(l,e,solParcial) &&
            cumpleAcotamiento(e,b_solParcial,b_mejorSol,beneficioDisponible)){
             solParcial.push_back(e);
             beneficioDisponible -= max(0,e.benefit-e.cost); //beneficio y costo de e
-            dfs(e.coor.second,solParcial,mejorSol,data,edges,beneficioDisponible);
+            dfs(solParcial,mejorSol,data,edges,beneficioDisponible);
         }
     }
 
-    //e=eliminarUltimoLado(solParcial);
-    e = solParcial.back();
+    edge e = solParcial.back();
     solParcial.pop_back();
     beneficioDisponible += max(0,e.benefit-e.cost);
+
+    cout<<"RESULTADO: ";
+    for(vector<edge>::iterator it = solParcial.begin(); it != solParcial.end(); ++it){
+        cout<<"("<<(*it).coor.first<<","<<(*it).coor.second<<") ";
+    }
+    cout<<endl;
 }

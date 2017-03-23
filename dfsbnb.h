@@ -12,6 +12,8 @@
     
 using namespace std;
 
+void obtenerMaximoBeneficio(int beneficio);
+
 void buscarAristaConD(
         int v,
         edge &edge, 
@@ -40,5 +42,4 @@ int beneficio(vector<edge> solucion);
 void dfs(vector<edge> &solParcial, 
          vector<edge> &mejorSol, 
          map<pair<int, int>, vector<int>> data,
-         map<int, set<int>> edges,
-         int &beneficioDisponible);
+         map<int, set<int>> edges);

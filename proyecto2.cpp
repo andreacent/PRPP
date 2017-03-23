@@ -32,9 +32,10 @@ void insertData(int i,int j, int c,int b, bool isP){
     edges[i].insert(j);
 }
 
-void setDataAndEdge(ifstream &infile, int loop, bool isP){
+int setDataAndEdge(ifstream &infile, int loop, bool isP){
     string line,token;
     int i,j,c,b;
+    int beneficioDisponible = 0;
     for(int x=0;x<loop;x++) {
         getline(infile, line);
         istringstream ss(line);
@@ -50,7 +51,10 @@ void setDataAndEdge(ifstream &infile, int loop, bool isP){
 
         insertData(i,j,c,b, isP);
         insertData(j,i,c,b, isP);
+
+        if(!isP) beneficioDisponible += b-c;
     }
+    return beneficioDisponible;
 }
 
 /* Print map of edges */
@@ -91,7 +95,7 @@ int main(int argc, char const *argv[]) {
     getline(infile, line); 
     rqdEdges = stoi(line.substr(line.find("edges")+5));
     cout << "rqdEdges = "<<rqdEdges<<endl;
-    setDataAndEdge(infile, rqdEdges, false);
+    int beneficioDisponible = setDataAndEdge(infile, rqdEdges, false);
 
     //get number of non required edges
     getline(infile, line); 
@@ -99,11 +103,11 @@ int main(int argc, char const *argv[]) {
     cout << "nonrqdEdges = "<<nonRqdEdges<<endl;
     setDataAndEdge(infile, nonRqdEdges, true);
 
-    printEdgesMap(edges);
+    //printEdgesMap(edges);
 
     vector<edge> solParcial;
     vector<edge> mejorSol; //SE DEBE OBTENER DEL ALGORITMO DEL PROYECTO1
-    int beneficioDisponible = 0; // NO ESTOY CLARA COMO SE DEBE INICIALIZAR
+    edge e;
 
     /* ELIMINAR */
     deque<pair<int,int>> solAlbaidaA ={
@@ -128,12 +132,19 @@ int main(int argc, char const *argv[]) {
     unsigned t0, t1;
     t0=clock();
 
-    edge e;
     buscarAristaConD(0,e,data,edges[0]);
     solParcial.push_back(e);
-    dfs(solParcial,mejorSol,data,edges,beneficioDisponible);
+    obtenerMaximoBeneficio(beneficioDisponible);
+    dfs(solParcial,mejorSol,data,edges);
 
     t1 = clock();
+
+
+    cout<<"RESULTADO: ";
+    for(vector<edge>::iterator it = solParcial.begin(); it != solParcial.end(); ++it){
+        cout<<"("<<(*it).coor.first<<","<<(*it).coor.second<<") ";
+    }
+    cout<<endl;
 
     double time = (double(t1-t0)/CLOCKS_PER_SEC);
     cout << "Execution Time: " << time << endl;

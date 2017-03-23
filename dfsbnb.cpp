@@ -5,7 +5,12 @@
 */
 
 #include "dfsbnb.h"
+int beneficioDisponible = 0;
     
+void obtenerMaximoBeneficio(int beneficio){
+    beneficioDisponible = beneficio;
+}
+
 void obtenerListaDeSucesores(
         int v,
         priority_queue<edge,vector<edge>,CompareEdges> &l,
@@ -115,8 +120,7 @@ int beneficio(vector<edge> solucion){
 void dfs(vector<edge> &solParcial, 
          vector<edge> &mejorSol, 
          map<pair<int, int>, vector<int>> data,
-         map<int, set<int>> edges,
-         int &beneficioDisponible){
+         map<int, set<int>> edges){
 
     int v = solParcial.back().coor.second;
     int b_solParcial = beneficio(solParcial);
@@ -137,7 +141,7 @@ void dfs(vector<edge> &solParcial,
         edge e = l.top();
         l.pop();
 
-        cout<<"("<<e.coor.first<<","<<e.coor.second<<") b = "<<e.benefit<<" c = "<<e.cost<<endl;
+        //cout<<"("<<e.coor.first<<","<<e.coor.second<<") b = "<<e.benefit<<" c = "<<e.cost<<endl;
 
         if(!cicloNegativo(e,solParcial) && 
            !estaLadoEnSolParicial(e,solParcial) &&
@@ -145,17 +149,11 @@ void dfs(vector<edge> &solParcial,
            cumpleAcotamiento(e,b_solParcial,b_mejorSol,beneficioDisponible)){
             solParcial.push_back(e);
             beneficioDisponible -= max(0,e.benefit-e.cost); //beneficio y costo de e
-            dfs(solParcial,mejorSol,data,edges,beneficioDisponible);
+            dfs(solParcial,mejorSol,data,edges);
         }
     }
 
     edge e = solParcial.back();
     solParcial.pop_back();
     beneficioDisponible += max(0,e.benefit-e.cost);
-
-    cout<<"RESULTADO: ";
-    for(vector<edge>::iterator it = solParcial.begin(); it != solParcial.end(); ++it){
-        cout<<"("<<(*it).coor.first<<","<<(*it).coor.second<<") ";
-    }
-    cout<<endl;
 }

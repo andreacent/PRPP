@@ -16,7 +16,6 @@ void obtenerMaximoBeneficio(int beneficio);
 
 void buscarAristaConD(
         int v,
-        edge &edge, 
         map<pair<int, int>, vector<int>> data,
         set<int> adyacentes);
 
@@ -39,7 +38,6 @@ bool cumpleAcotamiento(edge ec, int b_solParcial, int b_mejorSol, int b_disponib
 
 int beneficio(vector<edge> solucion);
 
-void dfs(vector<edge> &solParcial, 
-         vector<edge> &mejorSol, 
+void dfs(vector<edge> &mejorSol, 
          map<pair<int, int>, vector<int>> data,
          map<int, set<int>> edges);

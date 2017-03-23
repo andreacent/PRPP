@@ -105,9 +105,7 @@ int main(int argc, char const *argv[]) {
 
     //printEdgesMap(edges);
 
-    vector<edge> solParcial;
     vector<edge> mejorSol; //SE DEBE OBTENER DEL ALGORITMO DEL PROYECTO1
-    edge e;
 
     /* ELIMINAR */
     deque<pair<int,int>> solAlbaidaA ={
@@ -132,16 +130,15 @@ int main(int argc, char const *argv[]) {
     unsigned t0, t1;
     t0=clock();
 
-    buscarAristaConD(0,e,data,edges[0]);
-    solParcial.push_back(e);
+    buscarAristaConD(0,data,edges[0]);
     obtenerMaximoBeneficio(beneficioDisponible);
-    dfs(solParcial,mejorSol,data,edges);
+    dfs(mejorSol,data,edges);
 
     t1 = clock();
 
 
     cout<<"RESULTADO: ";
-    for(vector<edge>::iterator it = solParcial.begin(); it != solParcial.end(); ++it){
+    for(vector<edge>::iterator it = mejorSol.begin(); it != mejorSol.end(); ++it){
         cout<<"("<<(*it).coor.first<<","<<(*it).coor.second<<") ";
     }
     cout<<endl;

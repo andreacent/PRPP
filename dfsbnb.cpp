@@ -6,6 +6,7 @@
 
 #include "dfsbnb.h"
 int beneficioDisponible = 0;
+vector<edge> solParcial;
     
 void obtenerMaximoBeneficio(int beneficio){
     beneficioDisponible = beneficio;
@@ -29,24 +30,25 @@ void obtenerListaDeSucesores(
 
 void buscarAristaConD(
         int v,
-        edge &edge, 
         map<pair<int, int>, vector<int>> data,
         set<int> adyacentes){
 
     set<int>::iterator it = adyacentes.begin();
     pair<int,int> e = {v,*it};
     int e_beneficio = data[e][1] - data[e][0];
-    edge = {e,data[e][1], data[e][0]};
+    edge edge_init = {e,data[e][1], data[e][0]};
     ++it;
 
     while (it != adyacentes.end()){
         e = {v,*it};
         if(data[e][1] - data[e][0] > e_beneficio){
             e_beneficio = data[e][1] - data[e][0];
-            edge = {e,data[e][1], data[e][0]};
+            edge_init = {e,data[e][1], data[e][0]};
         }
         ++it;
     }
+
+    solParcial.push_back(edge_init);
 }
 
 bool cicloNegativo(edge ec, vector<edge> solParcial){
@@ -117,8 +119,7 @@ int beneficio(vector<edge> solucion){
     return total;
 }
 
-void dfs(vector<edge> &solParcial, 
-         vector<edge> &mejorSol, 
+void dfs(vector<edge> &mejorSol, 
          map<pair<int, int>, vector<int>> data,
          map<int, set<int>> edges){
 
@@ -149,7 +150,7 @@ void dfs(vector<edge> &solParcial,
            cumpleAcotamiento(e,b_solParcial,b_mejorSol,beneficioDisponible)){
             solParcial.push_back(e);
             beneficioDisponible -= max(0,e.benefit-e.cost); //beneficio y costo de e
-            dfs(solParcial,mejorSol,data,edges);
+            dfs(mejorSol,data,edges);
         }
     }
 

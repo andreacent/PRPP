@@ -14,7 +14,7 @@ using namespace std;
 
 void obtenerMaximoBeneficio(int beneficio);
 
-void buscarAristaConD(
+void obtenerAristaInicial(
         int v,
         map<pair<int, int>, vector<int>> data,
         set<int> adyacentes);

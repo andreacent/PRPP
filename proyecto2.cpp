@@ -127,10 +127,17 @@ int main(int argc, char const *argv[]) {
     }
     /* ELIMINAR */
 
+
+    cout<<"INICIAL: ";
+    for(vector<edge>::iterator it = mejorSol.begin(); it != mejorSol.end(); ++it){
+        cout<<"("<<(*it).coor.first<<","<<(*it).coor.second<<") ";
+    }
+    cout<<endl;
+
     unsigned t0, t1;
     t0=clock();
 
-    buscarAristaConD(0,data,edges[0]);
+    obtenerAristaInicial(0,data,edges[0]);
     obtenerMaximoBeneficio(beneficioDisponible);
     dfs(mejorSol,data,edges);
 

@@ -132,6 +132,12 @@ void dfs(vector<edge> &mejorSol,
         if(b_solParcial > b_mejorSol){
             mejorSol.clear();
             mejorSol = solParcial;
+
+            cout<<endl<<"MEJOR SOLUCION: ";
+            for(vector<edge>::iterator it = mejorSol.begin(); it != mejorSol.end(); ++it){
+                cout<<"("<<(*it).coor.first<<","<<(*it).coor.second<<") ";
+            }
+            cout<<endl<<"Beneficio = "<<b_solParcial<<endl;
         }
 
     // Lista de aristas

@@ -68,20 +68,26 @@ void printEdgesMap(map<int, set<int>> e){
     }
 }
 
+// Funcion que mata el programa cuando recibe una senal
+void signalHandler( int ){
+    fprintf(stderr, "%s\n", "Falló por tiempo.");
+    exit(1);
+}
+
 /*
 argv[1] -> intance
 argv[2] -> solucion optima
 */
 int main(int argc, char const *argv[]) {
     int vertices,rqdEdges, nonRqdEdges;
-    string filecito = argv[1];
-    string filename = filecito.substr(0, filecito.find("."));
+    signal( SIGINT, &signalHandler );
 
     if (argc < 2) { // Check the value of argc. If not enough parameters have been passed, inform user and exit.
         cout << "Usage is ./main <file>\n"; // Inform the user of how to use the program
         exit(0);
     }
 
+    string filecito = argv[1];
     /*****Read file to get data*****/
     ifstream infile("instanciasPRPP/ALBAIDA/ALBAIDAANoRPP"); //ifstream infile(argv[1]);
     string line,token;
@@ -94,13 +100,13 @@ int main(int argc, char const *argv[]) {
     //get number of required edges
     getline(infile, line); 
     rqdEdges = stoi(line.substr(line.find("edges")+5));
-    cout << "rqdEdges = "<<rqdEdges<<endl;
+    //cout << "rqdEdges = "<<rqdEdges<<endl;
     int beneficioDisponible = setDataAndEdge(infile, rqdEdges, false);
 
     //get number of non required edges
     getline(infile, line); 
     nonRqdEdges = stoi(line.substr(line.find("edges")+5));
-    cout << "nonrqdEdges = "<<nonRqdEdges<<endl;
+    //cout << "nonrqdEdges = "<<nonRqdEdges<<endl;
     setDataAndEdge(infile, nonRqdEdges, true);
 
     //printEdgesMap(edges);
@@ -140,18 +146,30 @@ int main(int argc, char const *argv[]) {
     obtenerAristaInicial(0,data,edges[0]);
     obtenerMaximoBeneficio(beneficioDisponible);
     dfs(mejorSol,data,edges);
+    
+    /*
+
+    #include <chrono>
+    chrono::minutes ms(2);
+    chrono::time_point<chrono::system_clock> end;
+    end = chrono::system_clock::now() + ms; // this is the end point
+    while(chrono::system_clock::now() < end){ // still less than the end?
+        dfs(mejorSol,data,edges);
+    }
+    */
 
     t1 = clock();
 
 
-    cout<<"RESULTADO: ";
+    //RESULTADO SI TERMINA ANTES DE LAS 2 HORAS
+    cout<<endl<<"RESULTADO: ";
     for(vector<edge>::iterator it = mejorSol.begin(); it != mejorSol.end(); ++it){
         cout<<"("<<(*it).coor.first<<","<<(*it).coor.second<<") ";
     }
-    cout<<endl;
+    cout<<endl<<"Beneficio = "<<beneficio(mejorSol)<<endl;
 
     double time = (double(t1-t0)/CLOCKS_PER_SEC);
-    cout << "Execution Time: " << time << endl;
+    cout << "Tiempo: " << time << endl;
 
     return 0;
 }

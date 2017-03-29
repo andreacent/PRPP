@@ -38,11 +38,11 @@ bool exist_u(vector<edge> t, int b);
 
 bool exist_e(edge e, vector<edge> t);
 
-void rpath_fromt(deque<edge> &rcm, vector<edge> &t);
+void rpath_fromt(deque<edge> rcm, vector<edge> &t);
 
-int get_i(deque<edge> &rcm);
+int get_i(deque<edge> rcm);
 
-void unirCaminoAlCiclo(vector<edge> &solution, deque<edge> &c);
+void unirCaminoAlCiclo(vector<edge> &solution, deque<edge> c);
 
 int caminoCostoMinimo(  int source, int target, deque<pair<int,int>> &cm_bi,
 							     set<int> &v, map<pair<int, int>, vector<int>> &data,

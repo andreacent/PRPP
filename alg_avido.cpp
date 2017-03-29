@@ -79,15 +79,25 @@ int path_benefit(deque< pair<int,int>> c, vector<edge> &solution, map<pair<int, 
     return benefit;
 }
 
-void terase(edge e, vector<edge> &t){
+void terase(edge e, vector<edge> &t){ //ANDREA
 	vector<edge>::iterator normal_e, back_e;
+	bool normal_b = false;
+	bool back_b = false;
 
 	for (vector<edge>::iterator it = t.begin(); it != t.end(); ++it) {
-		if (((*it).coor.first == e.coor.first) && ((*it).coor.second == e.coor.second)) normal_e = it;
-		else if (((*it).coor.first == e.coor.second) && ((*it).coor.second == e.coor.first)) back_e = it;
+		if (((*it).coor.first == e.coor.first) && ((*it).coor.second == e.coor.second)){
+			normal_e = it;
+			normal_b = true;
+		}
+		else if (((*it).coor.first == e.coor.second) && ((*it).coor.second == e.coor.first)){
+			back_e = it;
+			back_b = true;
+		}
+
+		if(normal_b && back_b) break;
     }
-    t.erase(normal_e);
-    t.erase(back_e);
+    if(normal_b) t.erase(normal_e);
+    if(back_b) t.erase(back_e);
 }
 
 /***********************************************************************************************/
@@ -170,7 +180,7 @@ bool exist_e(edge e, vector<edge> t){
 }
 
 //remove edges in path rcm from set t
-void rpath_fromt(deque<edge> &rcm, vector<edge> &t){
+void rpath_fromt(deque<edge> rcm, vector<edge> &t){
 	for (auto e = rcm.begin(); e != rcm.end(); ++e){
 		if ( exist_e(*e,t) ) {
 			terase(*e,t);
@@ -179,12 +189,12 @@ void rpath_fromt(deque<edge> &rcm, vector<edge> &t){
 }
 
 //get las vertex of the path
-int get_i(deque<edge> &rcm){
+int get_i(deque<edge> rcm){
 	return rcm.back().coor.second;
 }
 
 //Add path to solution
-void unirCaminoAlCiclo(vector<edge> &solution, deque<edge> &c){
+void unirCaminoAlCiclo(vector<edge> &solution, deque<edge> c){
 	for (auto edge = c.begin(); edge != c.end(); ++edge){
     	solution.push_back(*edge);
     }
@@ -278,39 +288,54 @@ void heuristicaAvida(
 
 	int b = 0;
 	while(!t.empty()){
+cout<<"init while "<<endl;
 		if(exist_u(t,b)){
-			
+cout<<"\texist_u(t,b)"<<endl;
 			edge e_bu = obtenerLado(t,b,solution);
 			
 			terase(e_bu,t);
+
 			solution.push_back(e_bu);
 			b = e_bu.coor.second;
 		}
 
 		else{
+cout<<"\telse"<<endl;
 			set<deque<pair<int,int>>> ccm;
 
     		for (auto it = t.begin(); it != t.end(); ++it){
     			deque<pair<int,int>> cm_bi;
+
     			caminoCostoMinimo(b,(*it).coor.first,cm_bi,vertex,data,edges,solution);
     			
     			ccm.insert(cm_bi);
     		}
+  	
 			deque<edge> rcm = obtenerCamino(ccm,solution,data);
 			unirCaminoAlCiclo(solution , rcm);
-			rpath_fromt(rcm, t); //eliminar toda arista de rcm de T
-			b = get_i(rcm);
-		}
-	}
 
+			rpath_fromt(rcm, t); //eliminar toda arista de rcm de T'
+
+cout<<"\t\tantes get_i"<<endl;
+			if((int)rcm.size() > 0) b = get_i(rcm); //ANDREA
+cout<<"\t\tdespues get_i"<<endl;
+		}
+		cout<<"fin while "<<endl;
+	}
+cout<<"despues de while"<<endl;
 	if(solution.back().coor.second != 0){
 		deque<pair<int,int>> cm_id;
 		deque<edge> rcm;
+
+cout<<"\tantes caminoCostoMinimo"<<endl;
 		caminoCostoMinimo(solution.back().coor.second,0,cm_id,vertex,data,edges,solution);
+cout<<"\tdespues caminoCostoMinimo"<<endl;
 		for (auto p= cm_id.begin(); p != cm_id.end(); ++p) {
 	    	edge e = {*p,data[*p][1], data[*p][0]};
 			rcm.push_back(e);
 		}
+cout<<"\tantes unirCaminoAlCiclo"<<endl;
 		unirCaminoAlCiclo(solution , rcm);
+cout<<"\tdespues unirCaminoAlCiclo"<<endl;
 	}
 }

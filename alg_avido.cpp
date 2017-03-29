@@ -25,7 +25,7 @@ bool exist(int u, map <int,int> &prev){
 
 //Check if edge belongs to solution
 bool pertenece(edge &e, deque<edge> &solution){
-	for (auto edge = solution.begin(); edge != solution.end(); edge++) {
+	for (auto edge = solution.begin(); edge != solution.end(); ++edge) {
 
         if(e.coor.first == (*edge).coor.first){
         	if (e.coor.second == (*edge).coor.second) return true;
@@ -72,23 +72,33 @@ int get_benefit (edge e, deque<edge> &solution){
 //Calculate benefit of the path
 int path_benefit(deque< pair<int,int>> c, deque<edge> &solution, map<pair<int, int>, vector<int>> &data){
 	int benefit = 0;
-	for (auto p = c.begin(); p != c.end(); p++) {
+	for (auto p = c.begin(); p != c.end(); ++p) {
     	edge e = {*p,data[*p][1], data[*p][0]};
         benefit += get_benefit(e, solution);
     }
     return benefit;
 }
 
+void terase(edge e, vector<edge> &t){
+	vector<edge>::iterator normal_e, back_e;
+
+	for (vector<edge>::iterator it = t.begin(); it != t.end(); ++it) {
+		if (((*it).coor.first == e.coor.first) && ((*it).coor.second == e.coor.second)) normal_e = it;
+		else if (((*it).coor.first == e.coor.second) && ((*it).coor.second == e.coor.first)) back_e = it;
+    }
+    t.erase(normal_e);
+    t.erase(back_e);
+}
+
 /***********************************************************************************************/
 
 /***************************************heuristicaAvida FUNCTIONS*******************************/
 //Return edge with biggest benefit
-edge encontrarLado(set<edge> &t, deque<edge> &solution){
+edge encontrarLado(vector<edge> &t, deque<edge> &solution){
 	int max, benefit;
-	set<edge>::iterator it;
 	edge e;
 	max = MIN;
-	for (it = t.begin(); it != t.end(); ++it) {
+	for (auto it = t.begin(); it != t.end(); ++it) {
 		benefit = get_benefit(*it, solution);
 		if (max < benefit){
 			max = benefit;
@@ -99,11 +109,11 @@ edge encontrarLado(set<edge> &t, deque<edge> &solution){
 }
 
 //Return edge with biggest benefit (b,u)
-edge obtenerLado(set<edge> &t, int b, deque<edge> &solution){
+edge obtenerLado(vector<edge> &t, int b, deque<edge> &solution){
 	int max, benefit;
 	edge e;
 	max = MIN;
-	for (set<edge>::iterator it = t.begin(); it != t.end(); ++it) {
+	for (auto it = t.begin(); it != t.end(); ++it) {
 		if( (*it).coor.first == b){
 			benefit = get_benefit(*it, solution);
 			if (max < benefit){
@@ -134,7 +144,7 @@ deque<edge> obtenerCamino(set<deque<pair<int,int>>> &ccm, deque<edge> &solution,
 	//create path and return it
 	deque<edge> path;
 
-	for (auto p = c.begin(); p != c.end(); p++) {
+	for (auto p = c.begin(); p != c.end(); ++p) {
     	edge e = {*p,data[*p][1], data[*p][0]};
 		path.push_back(e);
 	}
@@ -143,8 +153,8 @@ deque<edge> obtenerCamino(set<deque<pair<int,int>>> &ccm, deque<edge> &solution,
 }
 
 //Check if exist a vertex u / edge(b,u)
-bool exist_u(set<edge> t, int b){
-	for (auto e = t.begin(); e != t.end(); e++){
+bool exist_u(vector<edge> t, int b){
+	for (auto e = t.begin(); e != t.end(); ++e){
 
 		if ((*e).coor.first == b) return true;
 	}
@@ -152,19 +162,18 @@ bool exist_u(set<edge> t, int b){
 }
 
 //Check if edge e is present in t
-bool exist_e(edge e, set<edge> t){
-	for (auto et = t.begin(); et != t.end(); et++){
+bool exist_e(edge e, vector<edge> t){
+	for (auto et = t.begin(); et != t.end(); ++et){
 		if ((e.coor.first == (*et).coor.first) && (e.coor.first == (*et).coor.first)) return true;
 	}
 	return false;	
 }
 
 //remove edges in path rcm from set t
-void rpath_fromt(deque<edge> &rcm, set<edge> &t){
-	for (auto e = rcm.begin(); e != rcm.end(); e++){
+void rpath_fromt(deque<edge> &rcm, vector<edge> &t){
+	for (auto e = rcm.begin(); e != rcm.end(); ++e){
 		if ( exist_e(*e,t) ) {
-			int a =3;
-			//t.erase(e);
+			terase(*e,t);
 		}
 	}
 }
@@ -176,7 +185,7 @@ int get_i(deque<edge> &rcm){
 
 //Add path to solution
 void unirCaminoAlCiclo(deque<edge> &solution, deque<edge> &c){
-	for (auto edge = c.begin(); edge != c.end(); edge++){
+	for (auto edge = c.begin(); edge != c.end(); ++edge){
     	solution.push_back(*edge);
     }
 }
@@ -251,14 +260,14 @@ void heuristicaAvida(
         deque<edge> &solution){
 
 	//Initialize t
-	set<edge> t; //R unido Q
+	vector<edge> t; //R unido Q
 	map<int, set<int>>::iterator it_t;
 
-	for (auto e1 = edgesRQ.begin(); e1 != edgesRQ.end(); e1++) {
-		for (auto e2 = (*e1).second.begin(); e2 != (*e1).second.end(); e2++) {
+	for (auto e1 = edgesRQ.begin(); e1 != edgesRQ.end(); ++e1) {
+		for (auto e2 = (*e1).second.begin(); e2 != (*e1).second.end(); ++e2) {
 			pair <int,int> p = make_pair((*e1).first,*e2);
 			edge e = {p,data[p][1], data[p][0]};
-			//t.insert(e);
+			t.push_back(e);
 		}
 	}
     
@@ -273,17 +282,15 @@ void heuristicaAvida(
 			
 			edge e_bu = obtenerLado(t,b,solution);
 			
-			//DELETE FROM SET
-			//t.erase(e_bu);
+			terase(e_bu,t);
 			solution.push_back(e_bu);
 			b = e_bu.coor.second;
 		}
 
 		else{
 			set<deque<pair<int,int>>> ccm;
-			set<edge>::iterator it;
 
-    		for (it = t.begin(); it != t.end(); ++it){
+    		for (auto it = t.begin(); it != t.end(); ++it){
     			deque<pair<int,int>> cm_bi;
     			caminoCostoMinimo(b,(*it).coor.first,cm_bi,vertex,data,edges,solution);
     			
@@ -300,7 +307,7 @@ void heuristicaAvida(
 		deque<pair<int,int>> cm_id;
 		deque<edge> rcm;
 		caminoCostoMinimo(solution.back().coor.second,0,cm_id,vertex,data,edges,solution);
-		for (auto p= cm_id.begin(); p != cm_id.end(); p++) {
+		for (auto p= cm_id.begin(); p != cm_id.end(); ++p) {
 	    	edge e = {*p,data[*p][1], data[*p][0]};
 			rcm.push_back(e);
 		}

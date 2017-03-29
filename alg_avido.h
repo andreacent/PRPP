@@ -24,17 +24,21 @@ int getfake_benefit(int u, int v, deque<edge> &solution, map<pair<int, int>, vec
 
 int get_benefit (edge e, deque<edge> &solution);
 
-int path_benefit(deque< pair<int,int>> &c, deque<edge> &solution, map<pair<int, int>, vector<int>> &data);
+int path_benefit(deque< pair<int,int>> c, deque<edge> &solution, map<pair<int, int>, vector<int>> &data);
 
-edge obtenerLado(set<edge> &t, deque<edge> &solution);
+void terase(edge e, vector<edge> &t);
+
+edge encontrarLado(vector<edge> &t, deque<edge> &solution);
+
+edge obtenerLado(vector<edge> &t, int b, deque<edge> &solution);
 
 deque<edge> obtenerCamino(set<deque<pair<int,int>>> &ccm, deque<edge> &solution, map<pair<int, int>, vector<int>> &data);
 
-bool exist_u(set<edge> t, int b);
+bool exist_u(vector<edge> t, int b);
 
-bool exist_e(edge e, set<edge> t);
+bool exist_e(edge e, vector<edge> t);
 
-void rpath_fromt(deque<edge> &rcm, set<edge> &t);
+void rpath_fromt(deque<edge> &rcm, vector<edge> &t);
 
 int get_i(deque<edge> &rcm);
 

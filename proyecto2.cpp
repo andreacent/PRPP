@@ -87,9 +87,9 @@ int main(int argc, char const *argv[]) {
         exit(0);
     }
 
+    /*****INICIO Read file to get data*****/
     string filecito = argv[1];
-    /*****Read file to get data*****/
-    ifstream infile("instanciasPRPP/ALBAIDA/ALBAIDAANoRPP"); //ifstream infile(argv[1]);
+    ifstream infile(argv[1]);
     string line,token;
 
     //get number of vertices 
@@ -108,31 +108,13 @@ int main(int argc, char const *argv[]) {
     nonRqdEdges = stoi(line.substr(line.find("edges")+5));
     //cout << "nonrqdEdges = "<<nonRqdEdges<<endl;
     setDataAndEdge(infile, nonRqdEdges, true);
+    /*****FIN Read file to get data*****/
 
     //printEdgesMap(edges);
 
-    vector<edge> mejorSol; //SE DEBE OBTENER DEL ALGORITMO DEL PROYECTO1
-
-    /* ELIMINAR */
-    deque<pair<int,int>> solAlbaidaA ={
-                {0,1},{1,7},{7,23},{23,33},{33,47},{47,41},
-                {41,49},{49,54},{54,55}}; 
-
-    deque<pair<int,int>> solAlbaidaAreturn ={{55,54},{54,49},
-                {49,41},{41,47},{47,33},{33,23},{23,7},{7,1},{1,0}};
-
-    deque<pair<int,int>>::iterator it;
-    for (it = solAlbaidaA.begin(); it != solAlbaidaA.end(); ++it){
-        edge e = {*it, data[e.coor][1], data[e.coor][0]};
-        mejorSol.push_back(e);
-    }
-
-    for (it = solAlbaidaAreturn.begin(); it != solAlbaidaAreturn.end(); ++it){ 
-        edge e = {*it, 0, data[e.coor][0]};
-        mejorSol.push_back(e);
-    }
-    /* ELIMINAR */
-
+    //SOLUCION CON HEURISTICA DE PROYECTO 1
+    vector<edge> mejorSol;
+    heuristicaAvida(data,edgesRQ,edges,mejorSol);
 
     cout<<"INICIAL: ";
     for(vector<edge>::iterator it = mejorSol.begin(); it != mejorSol.end(); ++it){
@@ -140,6 +122,7 @@ int main(int argc, char const *argv[]) {
     }
     cout<<endl;
 
+    //PROYECTO 2
     unsigned t0, t1;
     t0=clock();
 

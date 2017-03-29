@@ -360,7 +360,7 @@ void heuristicaAvida(
 
 			rpath_fromt(rcm.first, t); //eliminar toda arista de rcm de T'
 
-			b = get_i(rcm.first); //ANDREA
+			b = get_i(rcm.first);
 			ccm.clear();
 		}
 	

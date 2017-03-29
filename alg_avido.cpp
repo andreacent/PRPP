@@ -123,7 +123,7 @@ edge encontrarLado(vector<edge> &t, vector<edge> &solution){
 }
 
 //Return edge with biggest benefit (b,u)
-edge obtenerLado(vector<edge> &t, int b, vector<edge> &solution){
+pair<edge,bool> obtenerLado(vector<edge> &t, int b, vector<edge> &solution){
 	int max, benefit;
 	edge e;
 	max = MIN;
@@ -136,11 +136,11 @@ edge obtenerLado(vector<edge> &t, int b, vector<edge> &solution){
 			}
 		}
 	}
-    return e;
+    return make_pair(e,max < 0);
 }
 
 //Return path with biggest benefit
-deque<edge> obtenerCamino(set<deque<pair<int,int>>> &ccm, vector<edge> &solution, map<pair<int, int>, vector<int>> &data){
+pair<deque<edge>,bool> obtenerCamino(set<deque<pair<int,int>>> &ccm, vector<edge> &solution, map<pair<int, int>, vector<int>> &data){
     int max, benefit;
     set<deque< pair<int,int> >>:: iterator it;
     deque<pair<int,int>> c;
@@ -163,7 +163,7 @@ deque<edge> obtenerCamino(set<deque<pair<int,int>>> &ccm, vector<edge> &solution
 		path.push_back(e);
 	}
 
-	return path;
+	return make_pair(path, max < 0);
 }
 
 //Check if exist a vertex u / edge(b,u)
@@ -280,6 +280,26 @@ void printh(vector<edge> mejorSol){
 	}
 	cout <<endl;
 }
+bool visited(edge e, vector<pair<int,int>> control){
+	for(auto p : control){
+		if ((e.coor.first == p.first) && (e.coor.second == p.second)) return true;
+		else if ((e.coor.second == p.first) && (e.coor.first == p.second)) return true;
+	}
+	return false;
+}
+void print_benefit(vector<edge> &solution){
+	vector<pair<int,int>> control;
+	int benefit = 0;
+
+	for(auto e : solution) {
+		if(visited(e,control)) benefit -= e.cost;
+		else {
+			benefit += (e.benefit - e.cost);
+			control.push_back(make_pair(e.coor.first,e.coor.second));
+		}
+	}
+	cout << "Beneficio de la heuristicaAvida: "<<benefit<<endl;
+}
 /***********************************************************************************************/
 
 /***************************************heuristicaAvida*****************************************/
@@ -309,30 +329,39 @@ void heuristicaAvida(
 	int b = 0;
 	while(!t.empty()){
 		if(exist_u(t,b)){
-			edge e_bu = obtenerLado(t,b,solution);
-			
-			terase(e_bu,t);
-
-			solution.push_back(e_bu);
-			b = e_bu.coor.second;
+			pair<edge,bool> e_bu = obtenerLado(t,b,solution);
+			terase(e_bu.first,t);
+			if (!e_bu.second){
+				solution.push_back(e_bu.first);
+				b = e_bu.first.coor.second;
+			}
 		}
 
 		else{
 			set<deque<pair<int,int>>> ccm;
+    		for (auto e = t.begin(); e != t.end(); ++e){
+    			deque<pair<int,int>> cm_bi1, cm_bi2;
+    			//for each vertex
+    				if (b !=(*e).coor.first){
+		    			caminoCostoMinimo(b,(*e).coor.first,cm_bi1,vertex,data,edges,solution);
+		    			ccm.insert(cm_bi1);
+		    		}
+	    			if (b !=(*e).coor.second){
+		    			caminoCostoMinimo(b,(*e).coor.second,cm_bi2,vertex,data,edges,solution);
+		    			ccm.insert(cm_bi2);
+		    		}
+    			//endfor
+			}
+			pair<deque<edge>,bool> rcm = obtenerCamino(ccm,solution,data);
+			if (rcm.second){
+			 	break;
+			}
+			unirCaminoAlCiclo(solution , rcm.first);
 
-    		for (auto it = t.begin(); it != t.end(); ++it){
-    			deque<pair<int,int>> cm_bi;
-    			int fin = (*it).coor.first;
-    			caminoCostoMinimo(b,(*it).coor.first,cm_bi,vertex,data,edges,solution);
-    			ccm.insert(cm_bi);
-    		}
-  	
-			deque<edge> rcm = obtenerCamino(ccm,solution,data);
-			unirCaminoAlCiclo(solution , rcm);
+			rpath_fromt(rcm.first, t); //eliminar toda arista de rcm de T'
 
-			rpath_fromt(rcm, t); //eliminar toda arista de rcm de T'
-
-			if((int)rcm.size() > 0) b = get_i(rcm); //ANDREA
+			b = get_i(rcm.first); //ANDREA
+			ccm.clear();
 		}
 	
 	}
@@ -347,4 +376,5 @@ void heuristicaAvida(
 		}
 		unirCaminoAlCiclo(solution , rcm);
 	}
+	print_benefit(solution);
 }

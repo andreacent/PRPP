@@ -115,9 +115,8 @@ int main(int argc, char const *argv[]) {
     //SOLUCION CON HEURISTICA DE PROYECTO 1
     vector<edge> mejorSol;
     heuristicaAvida(data,edgesRQ,edges,mejorSol);
-    printh(mejorSol);
 //./main instanciasPRPP/CHRISTOFIDES/P01NoRPP > resultados/P01NoRPP.txt
-    /*ISAACcout<<"INICIAL: ";
+    cout<<"INICIAL: ";
     for(vector<edge>::iterator it = mejorSol.begin(); it != mejorSol.end(); ++it){
         cout<<"("<<(*it).coor.first<<","<<(*it).coor.second<<") ";
     }
@@ -130,7 +129,6 @@ int main(int argc, char const *argv[]) {
     obtenerAristaInicial(0,data,edges[0]);
     obtenerMaximoBeneficio(beneficioDisponible);
     dfs(mejorSol,data,edges);
-    */
     /*
 
     #include <chrono>
@@ -142,7 +140,7 @@ int main(int argc, char const *argv[]) {
     }
     */
 
-    /*ISAACt1 = clock();
+    t1 = clock();
 
 
     //RESULTADO SI TERMINA ANTES DE LAS 2 HORAS
@@ -154,6 +152,5 @@ int main(int argc, char const *argv[]) {
 
     double time = (double(t1-t0)/CLOCKS_PER_SEC);
     cout << "Tiempo: " << time << endl;
-    */
     return 0;
 }

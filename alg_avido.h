@@ -30,9 +30,9 @@ void terase(edge e, vector<edge> &t);
 
 edge encontrarLado(vector<edge> &t, vector<edge> &solution);
 
-edge obtenerLado(vector<edge> &t, int b, vector<edge> &solution);
+pair <edge,bool> obtenerLado(vector<edge> &t, int b, vector<edge> &solution);
 
-deque<edge> obtenerCamino(set<deque<pair<int,int>>> &ccm, vector<edge> &solution, map<pair<int, int>, vector<int>> &data);
+pair<deque<edge>,bool> obtenerCamino(set<deque<pair<int,int>>> &ccm, vector<edge> &solution, map<pair<int, int>, vector<int>> &data);
 
 bool exist_u(vector<edge> t, int b);
 

@@ -24,7 +24,7 @@ bool exist(int u, map <int,int> &prev){
 }
 
 //Check if edge belongs to solution
-bool pertenece(edge &e, deque<edge> &solution){
+bool pertenece(edge &e, vector<edge> &solution){
 	for (auto edge = solution.begin(); edge != solution.end(); ++edge) {
 
         if(e.coor.first == (*edge).coor.first){
@@ -40,7 +40,7 @@ bool pertenece(edge &e, deque<edge> &solution){
 
 
 //Calculate fake benefit (used in caminoCostoMinimo - Dijkstra)
-int getfake_benefit(int u, int v, deque<edge> &solution, map<pair<int, int>, vector<int>> &data){
+int getfake_benefit(int u, int v, vector<edge> &solution, map<pair<int, int>, vector<int>> &data){
 
 	pair<int,int> p = make_pair(u,v);
 	edge e = {p, data[p][1], data[p][0]};
@@ -59,7 +59,7 @@ int getfake_benefit(int u, int v, deque<edge> &solution, map<pair<int, int>, vec
 
 
 //calculate benefit
-int get_benefit (edge e, deque<edge> &solution){
+int get_benefit (edge e, vector<edge> &solution){
 
 	if (pertenece(e,solution)){
 		return -(e.cost);
@@ -70,7 +70,7 @@ int get_benefit (edge e, deque<edge> &solution){
 }
 
 //Calculate benefit of the path
-int path_benefit(deque< pair<int,int>> c, deque<edge> &solution, map<pair<int, int>, vector<int>> &data){
+int path_benefit(deque< pair<int,int>> c, vector<edge> &solution, map<pair<int, int>, vector<int>> &data){
 	int benefit = 0;
 	for (auto p = c.begin(); p != c.end(); ++p) {
     	edge e = {*p,data[*p][1], data[*p][0]};
@@ -94,7 +94,7 @@ void terase(edge e, vector<edge> &t){
 
 /***************************************heuristicaAvida FUNCTIONS*******************************/
 //Return edge with biggest benefit
-edge encontrarLado(vector<edge> &t, deque<edge> &solution){
+edge encontrarLado(vector<edge> &t, vector<edge> &solution){
 	int max, benefit;
 	edge e;
 	max = MIN;
@@ -109,7 +109,7 @@ edge encontrarLado(vector<edge> &t, deque<edge> &solution){
 }
 
 //Return edge with biggest benefit (b,u)
-edge obtenerLado(vector<edge> &t, int b, deque<edge> &solution){
+edge obtenerLado(vector<edge> &t, int b, vector<edge> &solution){
 	int max, benefit;
 	edge e;
 	max = MIN;
@@ -126,7 +126,7 @@ edge obtenerLado(vector<edge> &t, int b, deque<edge> &solution){
 }
 
 //Return path with biggest benefit
-deque<edge> obtenerCamino(set<deque<pair<int,int>>> &ccm, deque<edge> &solution, map<pair<int, int>, vector<int>> &data){
+deque<edge> obtenerCamino(set<deque<pair<int,int>>> &ccm, vector<edge> &solution, map<pair<int, int>, vector<int>> &data){
     int max, benefit;
     set<deque< pair<int,int> >>:: iterator it;
     deque<pair<int,int>> c;
@@ -184,7 +184,7 @@ int get_i(deque<edge> &rcm){
 }
 
 //Add path to solution
-void unirCaminoAlCiclo(deque<edge> &solution, deque<edge> &c){
+void unirCaminoAlCiclo(vector<edge> &solution, deque<edge> &c){
 	for (auto edge = c.begin(); edge != c.end(); ++edge){
     	solution.push_back(*edge);
     }
@@ -197,7 +197,7 @@ void unirCaminoAlCiclo(deque<edge> &solution, deque<edge> &c){
 int caminoCostoMinimo(  int source, int target, deque<pair<int,int>> &cm_bi,
 							     set<int> &v, map<pair<int, int>, vector<int>> &data,
 							     map<int, set<int>> edges,
-							     deque<edge> &solution){
+							     vector<edge> &solution){
 
  	priority_queue<vertex,vector<vertex>,CompareVertex> q;
 	map <int,int> dist, prev;
@@ -257,7 +257,7 @@ void heuristicaAvida(
 		map<pair<int, int>, vector<int>> data,
         map<int, set<int>> edgesRQ,
        	map<int, set<int>> edges,
-        deque<edge> &solution){
+        vector<edge> &solution){
 
 	//Initialize t
 	vector<edge> t; //R unido Q

@@ -111,11 +111,37 @@ bool cumpleAcotamiento(edge ec, int b_solParcial, int b_mejorSol, int b_disponib
     return true;
 }
 
+/*
 int beneficio(vector<edge> solucion){
     int total =0;
 
     for (vector<edge>::iterator it = solucion.begin(); it != solucion.end(); ++it)
         total += (*it).benefit - (*it).cost;
+    return total;
+}
+*/
+//Check if edge belongs to solution
+
+bool visited2(edge e, vector<pair<int,int>> control){
+    for(auto p : control){
+        if ((e.coor.first == p.first) && (e.coor.second == p.second)) return true;
+        else if ((e.coor.second == p.first) && (e.coor.first == p.second)) return true;
+    }
+    return false;
+}
+
+int beneficio(vector<edge> solucion){
+
+    vector<pair<int,int>> control;
+    int total = 0;
+
+    for(auto e : solucion) {
+        if(visited2(e,control)) total -= e.cost;
+        else {
+            total += (e.benefit - e.cost);
+            control.push_back(make_pair(e.coor.first,e.coor.second));
+        }
+    }
     return total;
 }
 

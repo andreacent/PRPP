@@ -41,3 +41,4 @@ int beneficio(vector<edge> solucion);
 void dfs(vector<edge> &mejorSol, 
          map<pair<int, int>, vector<int>> data,
          map<int, set<int>> edges);
+bool visited2(edge e, vector<pair<int,int>> control);

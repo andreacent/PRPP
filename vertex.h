@@ -19,7 +19,7 @@ struct vertex {
 class CompareVertex {
 public:
     bool operator()(vertex &v1, vertex &v2) {
-        if (v1.benefit  < v2.benefit) return true;
+        if (v1.benefit  > v2.benefit) return true;
         return false;
     }
 };

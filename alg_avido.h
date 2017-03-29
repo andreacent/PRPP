@@ -54,3 +54,6 @@ void heuristicaAvida(
         map<int, set<int>> edgesRQ,
        	map<int, set<int>> edges,
         vector<edge> &solution);
+
+void printh(vector<edge> mejorSol);
+void printc(deque<pair<int,int>> cm);

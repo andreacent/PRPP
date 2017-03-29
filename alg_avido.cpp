@@ -19,8 +19,12 @@ set<int> obtenerVertices(map<int, set<int>> &edges){
 
 //Check if an element exist for key 'u' in map prev
 bool exist(int u, map <int,int> &prev){
-	map<int,int>::iterator it = prev.find(u);
-	return it!=prev.end();
+
+	for(auto iter = prev.begin(); iter != prev.end(); ++iter){
+		int k =  iter->first;
+		if (k == u) return true;
+	}
+	return false;
 }
 
 //Check if edge belongs to solution
@@ -260,6 +264,22 @@ int caminoCostoMinimo(  int source, int target, deque<pair<int,int>> &cm_bi,
  	return -1;
 }  
 
+void printc(deque<pair<int,int>> cm){
+	cout << "camino: ";
+	for(auto p : cm) {
+		cout << p.first<<",";
+	}
+	cout << cm.back().second;
+	cout <<endl;
+}
+
+void printh(vector<edge> mejorSol){
+	cout << "ciclo:";
+	for(auto e : mejorSol) {
+		cout << " ("<<e.coor.first<<","<<e.coor.second<<")";
+	}
+	cout <<endl;
+}
 /***********************************************************************************************/
 
 /***************************************heuristicaAvida*****************************************/
@@ -288,9 +308,7 @@ void heuristicaAvida(
 
 	int b = 0;
 	while(!t.empty()){
-cout<<"init while "<<endl;
 		if(exist_u(t,b)){
-cout<<"\texist_u(t,b)"<<endl;
 			edge e_bu = obtenerLado(t,b,solution);
 			
 			terase(e_bu,t);
@@ -300,14 +318,12 @@ cout<<"\texist_u(t,b)"<<endl;
 		}
 
 		else{
-cout<<"\telse"<<endl;
 			set<deque<pair<int,int>>> ccm;
 
     		for (auto it = t.begin(); it != t.end(); ++it){
     			deque<pair<int,int>> cm_bi;
-
+    			int fin = (*it).coor.first;
     			caminoCostoMinimo(b,(*it).coor.first,cm_bi,vertex,data,edges,solution);
-    			
     			ccm.insert(cm_bi);
     		}
   	
@@ -316,26 +332,19 @@ cout<<"\telse"<<endl;
 
 			rpath_fromt(rcm, t); //eliminar toda arista de rcm de T'
 
-cout<<"\t\tantes get_i"<<endl;
 			if((int)rcm.size() > 0) b = get_i(rcm); //ANDREA
-cout<<"\t\tdespues get_i"<<endl;
 		}
-		cout<<"fin while "<<endl;
+	
 	}
-cout<<"despues de while"<<endl;
 	if(solution.back().coor.second != 0){
 		deque<pair<int,int>> cm_id;
 		deque<edge> rcm;
 
-cout<<"\tantes caminoCostoMinimo"<<endl;
 		caminoCostoMinimo(solution.back().coor.second,0,cm_id,vertex,data,edges,solution);
-cout<<"\tdespues caminoCostoMinimo"<<endl;
 		for (auto p= cm_id.begin(); p != cm_id.end(); ++p) {
 	    	edge e = {*p,data[*p][1], data[*p][0]};
 			rcm.push_back(e);
 		}
-cout<<"\tantes unirCaminoAlCiclo"<<endl;
 		unirCaminoAlCiclo(solution , rcm);
-cout<<"\tdespues unirCaminoAlCiclo"<<endl;
 	}
 }

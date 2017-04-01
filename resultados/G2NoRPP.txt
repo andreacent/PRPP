@@ -1,0 +1,7 @@
+vertices = 16
+Beneficio de la heuristicaAvida: 0
+INICIAL: (0,1) (1,5) (5,9) (9,8) (8,4) (4,0) 
+
+RESULTADO: (0,1) (1,5) (5,9) (9,8) (8,4) (4,0) 
+Beneficio = 0
+Tiempo: 0.051718

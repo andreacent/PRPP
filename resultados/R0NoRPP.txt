@@ -1,0 +1,16 @@
+vertices = 20
+Beneficio de la heuristicaAvida: 1336
+INICIAL: (0,15) (15,13) (13,5) (5,3) (3,2) (2,5) (5,15) (15,4) (4,0) 
+
+MEJOR SOLUCION: (0,15) (15,8) (8,5) (5,3) (3,2) (2,5) (5,13) (13,4) (4,0) 
+Beneficio = 1465
+
+MEJOR SOLUCION: (0,15) (15,8) (8,5) (5,3) (3,2) (2,5) (5,13) (13,0) 
+Beneficio = 1632
+
+MEJOR SOLUCION: (0,15) (15,5) (5,3) (3,2) (2,5) (5,13) (13,0) 
+Beneficio = 1742
+
+RESULTADO: (0,15) (15,5) (5,3) (3,2) (2,5) (5,13) (13,0) 
+Beneficio = 1742
+Tiempo: 1.14957

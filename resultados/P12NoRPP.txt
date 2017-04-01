@@ -1,0 +1,13 @@
+vertices = 7
+Beneficio de la heuristicaAvida: 7
+INICIAL: (0,1) (1,2) (2,6) (6,5) (5,2) (2,0) 
+
+MEJOR SOLUCION: (0,1) (1,2) (2,0) 
+Beneficio = 8
+
+MEJOR SOLUCION: (0,1) (1,2) (2,3) (3,4) (4,5) (5,6) (6,0) 
+Beneficio = 10
+
+RESULTADO: (0,1) (1,2) (2,3) (3,4) (4,5) (5,6) (6,0) 
+Beneficio = 10
+Tiempo: 0.770868

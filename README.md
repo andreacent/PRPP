@@ -10,4 +10,4 @@ Compilar proyecto II: <br />
 > make proyecto2 <br />
 
 Correr: <br />
-> timeout --signal=SIGINT 120m ./main <file>
+> timeout --signal=SIGINT 120m ./main nombre-instancia<br />
